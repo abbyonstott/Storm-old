@@ -1,2 +1,2 @@
 # StormScript
-StormScript is an general-purpose programming language.
+StormScript is a general-purpose programming language.
