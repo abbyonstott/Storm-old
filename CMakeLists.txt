@@ -5,4 +5,5 @@ set (CMAKE_CXX_EXTENSIONS off)
 
 add_executable(stormscript
     src/stormscript.cc
+    src/file/read.cc
 )
