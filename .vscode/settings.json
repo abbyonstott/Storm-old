@@ -44,5 +44,7 @@
         "stdexcept": "cpp",
         "streambuf": "cpp",
         "typeinfo": "cpp"
-    }
+    },
+    "editor.tabSize": 8,
+    "editor.insertSpaces": false
 }

@@ -2,4 +2,4 @@
 
 #include <fstream>
 
-std::string openf(std::string filename);
+void readFile();
