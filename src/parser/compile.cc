@@ -1,4 +1,4 @@
-#include "../stormscript.h"
+#include "../storm.h"
 #include "parser.h"
 
 void isCorrectType(int type, std::vector<std::string>::iterator chunk) {

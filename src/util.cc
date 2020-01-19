@@ -1,4 +1,4 @@
-#include "stormscript.h"
+#include "storm.h"
 
 void stripString(std::string *quoted) {
 	quoted->erase(quoted->begin());

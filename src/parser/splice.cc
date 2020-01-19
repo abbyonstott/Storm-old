@@ -1,4 +1,4 @@
-#include "../stormscript.h"
+#include "../storm.h"
 #include "parser.h"
 
 void splice(std::string contents) {

@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/stormscript",
+            "program": "${workspaceFolder}/storm",
             "args": ["test.sts"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

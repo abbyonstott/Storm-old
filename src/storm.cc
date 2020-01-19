@@ -1,4 +1,4 @@
-#include "stormscript.h"
+#include "storm.h"
 #include "file/file.h"
 #include "parser/parser.h"
 
