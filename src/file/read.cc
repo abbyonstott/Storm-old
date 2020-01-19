@@ -1,7 +1,7 @@
 #include "../stormscript.h"
 #include "file.h"
 
-void readFile() {
+std::string readFile() {
 	std::ifstream file;
 	std::string contents;
 
@@ -9,7 +9,7 @@ void readFile() {
 
 	if (file.fail()) {
 		std::cerr << "Failed to open file\n";
-		exit(-1);
+		exit(EXIT_FAILURE);
 	}
 	
 	char c = file.get();
@@ -19,5 +19,7 @@ void readFile() {
 		c = file.get();
 	}
 
-	program.contents = contents;
+	file.close();
+
+	return contents;
 }

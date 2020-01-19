@@ -1,15 +1,16 @@
 #include "stormscript.h"
 #include "file/file.h"
+#include "parser/parser.h"
 
 int main(int argc, char const *argv[]) {
 	if (argc >= 2)
 		program.filename = argv[1];
 	else {
 		std::cerr << "Expected file name\n";
-		return -1;
+		return EXIT_FAILURE;
 	}
 
-	readFile();
+	splice(readFile());
 
-	return 0;
+	return EXIT_SUCCESS;
 }

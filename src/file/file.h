@@ -2,4 +2,4 @@
 
 #include <fstream>
 
-void readFile();
+std::string readFile();
