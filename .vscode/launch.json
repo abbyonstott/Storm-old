@@ -10,7 +10,7 @@
             "request": "launch",
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/storm",
-            "args": ["test.sts"],
+            "args": ["test.stormc"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

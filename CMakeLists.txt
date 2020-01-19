@@ -10,4 +10,6 @@ add_executable(storm
     src/file/read.cc
     src/parser/splice.cc
     src/parser/compile.cc
+    src/interpreter/interpreter.cc
+    src/interpreter/io.cc
 )

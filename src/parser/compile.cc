@@ -56,7 +56,7 @@ std::string evalLit(std::vector<std::string>::iterator &chunk) {
 
 void addStringToByteCode(std::string lit) {
 	for (char c : lit)
-		program.bytecode.push_back(uint8_t(c) + 0x80); // bytecode ascii has an offset of 0x80
+		program.bytecode.push_back(int(c) + 0x80); // bytecode ascii has an offset of 0x80
 }
 
 void getByteCode(std::vector<std::string> splicedProgram) {
@@ -76,8 +76,6 @@ void getByteCode(std::vector<std::string> splicedProgram) {
 				isCorrectType(STRING, chunk);
 
 				std::string literal = evalLit(chunk);
-
-				stripString(&literal);
 
 				addStringToByteCode(literal);
 			}
