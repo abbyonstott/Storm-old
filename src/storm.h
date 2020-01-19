@@ -4,6 +4,7 @@
 #include <string>
 #include <cstring>
 #include <vector>
+#include <fstream>
 
 inline struct program_t {
 	std::string filename;

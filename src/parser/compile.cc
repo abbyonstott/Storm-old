@@ -91,5 +91,14 @@ void getByteCode(std::vector<std::string> splicedProgram) {
 }
 
 void compile(std::vector<std::string> splicedProgram) {
+	std::string compiledFileName = program.filename + "c";
 	getByteCode(splicedProgram);
+
+	std::ofstream stormc;
+	stormc.open(compiledFileName);
+
+	for (uint8_t byte : program.bytecode)
+		stormc << byte;
+
+	stormc.close();
 }

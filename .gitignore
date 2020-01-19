@@ -1,4 +1,5 @@
 storm
+*.stormc
 Makefile
 
 CMakeFiles
