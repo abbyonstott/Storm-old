@@ -24,6 +24,7 @@ int numArgsGiven(std::vector<std::string>::iterator chunk) {
 	bool inquotes = 0;
 
 	do {
+		// commas inside quotes don't count, wait until quotes end for next splice
 		if ((*chunk)[0] == '\"' ^ chunk->back() == '\"') {
 			inquotes = !inquotes;
 			chunk++;
@@ -54,49 +55,66 @@ std::string evalLit(std::vector<std::string>::iterator &chunk) {
 	return literal;
 }
 
-void addStringToByteCode(std::string lit) {
+std::vector<uint8_t> addStringToByteCode(std::string lit) {
+	std::vector<uint8_t> bytecode;
+
 	for (char c : lit)
-		program.bytecode.push_back(int(c) + 0x80); // bytecode ascii has an offset of 0x80
+		bytecode.push_back(int(c) + 0x80); // bytecode ascii has an offset of 0x80
+
+	return bytecode;
 }
 
-void getByteCode(std::vector<std::string> splicedProgram) {
+void getData(std::vector<std::string> splicedProgram) {
 	for (auto chunk = splicedProgram.begin(); chunk != splicedProgram.end(); chunk++) {
-		if (*chunk == "write") {
-			// evaluate based on number of args required. In this case: 2
-			program.bytecode.push_back(0x0A);
+		if (*chunk == "write") { // requires 2 args
+			parser.text.push_back(0x0E); // move
+			parser.text.push_back(0x0F); // veax
+			parser.text.push_back(0x41);
 
 			chunk++;
-			if (*(chunk) != "[" || numArgsGiven(chunk) != 2) {
-				// trigger error if no args given
+			if (*chunk != "[" || numArgsGiven(chunk) != 2) {
+				// trigger error if not correct number of args
 				std::cerr << "Compilation error: write requires 2 arguments\n";
 				exit(EXIT_FAILURE);
 			}
 
+			// add arg lit to data
 			for (int i = 0; i < 2; i++, chunk++) {
 				isCorrectType(STRING, chunk);
-
+				
 				std::string literal = evalLit(chunk);
+				addArgToData(literal);
 
-				addStringToByteCode(literal);
+				parser.text.push_back(0x0E);
+				parser.text.push_back( ((i == 0) ? 0x10 : 0x11) );
+				parser.text.insert(parser.text.end(), 
+					parser.byte_val_ident.begin(), parser.byte_val_ident.end());
 			}
-
-			addStringToByteCode(";");
-		}
-		else { // identifier
-
+			parser.text.push_back(0x0A); // execute
 		}
 	}
 }
 
 void compile(std::vector<std::string> splicedProgram) {
+	getData(splicedProgram);
+	
+	// push compiled code to file
 	std::string compiledFileName = program.filename + "c";
-	getByteCode(splicedProgram);
+	std::vector<uint8_t> fullprogram;
+	
+	// start formatting data section
+	fullprogram.insert(fullprogram.end(),
+		parser.data.begin(), parser.data.end());
+
+	// format text
+	fullprogram.insert(fullprogram.end(),
+		parser.text.begin(), parser.text.end());
 
 	std::ofstream stormc;
 	stormc.open(compiledFileName);
 
-	for (uint8_t byte : program.bytecode)
+	for (uint8_t byte : fullprogram) {
 		stormc << byte;
-
-	stormc.close();
+	}
 }
+// bytecode is similar to nasm
