@@ -1,0 +1,37 @@
+[
+{
+  "directory": "/home/ethan/storm/build",
+  "command": "g++    -g   -g -std=c++17 -o CMakeFiles/storm.dir/src/storm.cc.o -c /home/ethan/storm/src/storm.cc",
+  "file": "/home/ethan/storm/src/storm.cc"
+},
+{
+  "directory": "/home/ethan/storm/build",
+  "command": "g++    -g   -g -std=c++17 -o CMakeFiles/storm.dir/src/util.cc.o -c /home/ethan/storm/src/util.cc",
+  "file": "/home/ethan/storm/src/util.cc"
+},
+{
+  "directory": "/home/ethan/storm/build",
+  "command": "g++    -g   -g -std=c++17 -o CMakeFiles/storm.dir/src/file/read.cc.o -c /home/ethan/storm/src/file/read.cc",
+  "file": "/home/ethan/storm/src/file/read.cc"
+},
+{
+  "directory": "/home/ethan/storm/build",
+  "command": "g++    -g   -g -std=c++17 -o CMakeFiles/storm.dir/src/parser/splice.cc.o -c /home/ethan/storm/src/parser/splice.cc",
+  "file": "/home/ethan/storm/src/parser/splice.cc"
+},
+{
+  "directory": "/home/ethan/storm/build",
+  "command": "g++    -g   -g -std=c++17 -o CMakeFiles/storm.dir/src/parser/compile.cc.o -c /home/ethan/storm/src/parser/compile.cc",
+  "file": "/home/ethan/storm/src/parser/compile.cc"
+},
+{
+  "directory": "/home/ethan/storm/build",
+  "command": "g++    -g   -g -std=c++17 -o CMakeFiles/storm.dir/src/parser/data.cc.o -c /home/ethan/storm/src/parser/data.cc",
+  "file": "/home/ethan/storm/src/parser/data.cc"
+},
+{
+  "directory": "/home/ethan/storm/build",
+  "command": "g++    -g   -g -std=c++17 -o CMakeFiles/storm.dir/src/interpreter/interpreter.cc.o -c /home/ethan/storm/src/interpreter/interpreter.cc",
+  "file": "/home/ethan/storm/src/interpreter/interpreter.cc"
+}
+]
