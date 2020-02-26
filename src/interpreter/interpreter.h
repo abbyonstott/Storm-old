@@ -14,3 +14,4 @@ inline struct interpreter_t {
 } interpreter;
 
 void interpret(std::string contents);
+void execute(std::string::iterator loc);

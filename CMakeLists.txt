@@ -14,4 +14,6 @@ add_executable(storm
     src/parser/compile.cc
     src/parser/data.cc
     src/interpreter/interpreter.cc
+    src/interpreter/execute.cc
+    src/interpreter/string.cc
 )
