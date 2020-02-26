@@ -13,6 +13,7 @@ char parseSpecial(std::string::iterator lttr) {
 			value = '\\';
 			break;
 	}
+	lttr++;
 
 	return value;
 }
@@ -46,6 +47,7 @@ void splice(std::string contents) {
 			case '\\':
 				if (inQuotes == true)
 					splicedProgram.back() += parseSpecial(lttr);
+				lttr++;
 				break; 
 			case ',':
 			case '[':
