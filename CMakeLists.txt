@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.0)
 project (Storm)
 set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_STANDARD_REQUIRED on)
@@ -11,9 +11,6 @@ add_executable(storm
     src/util.cc
     src/file/read.cc
     src/parser/splice.cc
-    src/parser/compile.cc
-    src/parser/data.cc
+    src/parser/parser.cc
     src/interpreter/interpreter.cc
-    src/interpreter/execute.cc
-    src/interpreter/string.cc
 )

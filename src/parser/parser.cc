@@ -1,5 +1,5 @@
 /*
-    compile.cc - Compiler functions
+    parser.cc - Parse and Compile the program
     Copyright (C) 2020 Ethan Onstott
 
     This program is free software: you can redistribute it and/or modify
@@ -18,6 +18,41 @@
 
 #include "../storm.h"
 #include "parser.h"
+
+void changeByteVal() {
+	std::vector<uint8_t> new_val_ident;
+	char hval_ident[8];
+
+	new_val_ident.push_back('[' + 0x80);
+
+	// hex string representation of parser.val_ident
+	sprintf(hval_ident, "%X", parser.val_ident); 
+	std::string hval_ident_s = hval_ident;
+
+	for (char n : hval_ident_s)
+		new_val_ident.push_back(n + 0x80);
+
+	new_val_ident.push_back(']' + 0x80);
+
+	parser.byte_val_ident = new_val_ident;
+}
+
+void addArgToData(std::string literal) {
+	std::vector<uint8_t> strByteCode = addStringToByteCode(literal);
+
+	changeByteVal();
+	parser.val_ident++;
+
+	parser.data.insert(parser.data.end(), 
+		parser.byte_val_ident.begin(), parser.byte_val_ident.end());
+
+	// type byte
+	parser.data.push_back(0x0D);
+	
+	// the literal
+	parser.data.insert(parser.data.end(),
+		strByteCode.begin(), strByteCode.end());
+}
 
 void isCorrectType(int type, std::vector<std::string>::iterator chunk) {
 	chunk++;
@@ -82,34 +117,43 @@ std::vector<uint8_t> addStringToByteCode(std::string lit) {
 	return bytecode;
 }
 
+
+// check if number of args is accurate
+void checkargs(std::vector<std::string>::iterator chunk, int required, std::string kw) {
+	if (*chunk != "[" || numArgsGiven(chunk) != 2) {
+		// trigger error if not correct number of args
+		std::cerr << "Compilation error: write requires 2 arguments\n";
+		exit(EXIT_FAILURE);
+	}
+}
+
+// add arg literal to data
+void addArgsToData(std::vector<std::string>::iterator chunk, int numargs) {
+	for (int i = 0; i < numargs; i++, chunk++) {
+		isCorrectType(STRING, chunk);
+		
+		std::string literal = evalLit(chunk);
+		addArgToData(literal);
+
+		parser.text.push_back(0x0E);
+		parser.text.push_back(0x10 + i);
+		parser.text.insert(parser.text.end(), 
+			parser.byte_val_ident.begin(), parser.byte_val_ident.end());
+	}
+	parser.text.push_back(0x0A); // execute
+}
+
 void getData(std::vector<std::string> splicedProgram) {
 	for (auto chunk = splicedProgram.begin(); chunk != splicedProgram.end(); chunk++) {
-		if (*chunk == "write") { // requires 2 args
-			parser.text.push_back(0x0E); // move
-			parser.text.push_back(0x0F); // veax
-			parser.text.push_back(0x41);
+		std::string kw = *chunk;
+		parser.text.push_back(0x0E); // move
+		parser.text.push_back(0x0F); // veax
 
-			chunk++;
-			if (*chunk != "[" || numArgsGiven(chunk) != 2) {
-				// trigger error if not correct number of args
-				std::cerr << "Compilation error: write requires 2 arguments\n";
-				exit(EXIT_FAILURE);
-			}
-
-			// add arg lit to data
-			for (int i = 0; i < 2; i++, chunk++) {
-				isCorrectType(STRING, chunk);
-				
-				std::string literal = evalLit(chunk);
-				addArgToData(literal);
-
-				parser.text.push_back(0x0E);
-				parser.text.push_back( ((i == 0) ? 0x10 : 0x11) );
-				parser.text.insert(parser.text.end(), 
-					parser.byte_val_ident.begin(), parser.byte_val_ident.end());
-			}
-			parser.text.push_back(0x0A); // execute
-		}
+		if (kw == "write") parser.text.push_back(0x41);
+			
+		chunk++;
+		checkargs(chunk, 2, kw);
+		addArgsToData(chunk, 2);
 	}
 }
 

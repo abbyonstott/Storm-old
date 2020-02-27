@@ -37,10 +37,3 @@ inline struct parser_t {
 void splice(std::string contents);
 // Compile the program into a file of bytecode
 void compile(std::vector<std::string> splicedProgram);
-// Convert string to ASCII-based bytecode
-std::vector<uint8_t> addStringToByteCode(std::string lit);
-
-// data functions
-
-// Add argument to data section
-void addArgToData(std::string literal);

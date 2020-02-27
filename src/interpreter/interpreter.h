@@ -30,6 +30,3 @@ inline struct interpreter_t {
 	// registers
 	std::string registers[4] = {"\0", "\0", "\0", "\0"};
 } interpreter;
-
-void interpret(std::string contents);
-void execute(std::string::iterator loc);
