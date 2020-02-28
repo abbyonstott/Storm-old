@@ -19,33 +19,11 @@
 #include "../storm.h"
 #include "parser.h"
 
-std::string evalLit(std::vector<std::string>::iterator &chunk) {
-	// get string without quotes
-	std::string literal;
-	chunk++;
-
-	while(chunk->back() != '\"') {
-		literal += *(chunk);
-		chunk++;
-	}
-
-	literal += *(chunk);
-
-	return literal;
-}
-
 int numArgsGiven(std::vector<std::string>::iterator chunk) {
 	int arg = 1;
 	bool inquotes = 0;
 
-	do {
-		// commas inside quotes don't count, wait until quotes end for next splice
-		if ((*chunk)[0] == '\"' ^ chunk->back() == '\"') {
-			inquotes = !inquotes;
-			chunk++;
-			continue;
-		}
-		
+	do {	
 		if (*(chunk) == "," && inquotes == 0)
 			arg++;
 
@@ -64,6 +42,7 @@ void checkargs(std::vector<std::string>::iterator chunk, int required, std::stri
 	}
 }
 
+// change value identifier
 void changeByteVal() {
 	std::vector<uint8_t> new_val_ident;
 	char hval_ident[8];
@@ -93,25 +72,22 @@ std::vector<uint8_t> addStringToByteCode(std::string lit) {
 
 
 
-void isCorrectType(int type, std::vector<std::string>::iterator chunk) {
+void isCorrectType(int type, std::vector<std::string>::iterator &chunk) {
 	chunk++;
 
 	switch (type)
 	{
 		case STRING:
 			if ((*chunk)[0] != '\"') {
-				std::cerr << "Compilation error: expected string as first argument\n";
+				std::cerr << "Compilation error: expected string as argument\n";
 				exit(EXIT_FAILURE);
 			}
-			
-			while (chunk->back() != '\"')
-				chunk++;
 			
 			break;
 	}
 }
 
-void addArgToData(std::string literal) {
+void addLitToData(std::string literal) {
 	std::vector<uint8_t> strByteCode = addStringToByteCode(literal);
 
 	changeByteVal();
@@ -129,12 +105,12 @@ void addArgToData(std::string literal) {
 }
 
 // add arg literal to data
-void addArgsToData(std::vector<std::string>::iterator chunk, int numargs) {
+void addArgsToData(std::vector<std::string>::iterator &chunk, int numargs) {
 	for (int i = 0; i < numargs; i++, chunk++) {
 		isCorrectType(STRING, chunk);
 		
-		std::string literal = evalLit(chunk);
-		addArgToData(literal);
+		std::string literal = *chunk;
+		addLitToData(literal);
 
 		parser.text.push_back(0x0E);
 		parser.text.push_back(0x10 + i);
@@ -144,17 +120,46 @@ void addArgsToData(std::vector<std::string>::iterator chunk, int numargs) {
 	parser.text.push_back(0x0A); // execute
 }
 
+void declare(std::vector<std::string>::iterator chunk) {
+	std::string val, name = *chunk;
+	std::vector<uint8_t> nameBytecode, valBytecode;
+	chunk += 2;
+
+	if ((*chunk)[0] == '\"') { // string literal
+		val = *chunk;
+		stripString(&val);
+	}
+	
+	nameBytecode = addStringToByteCode(name);
+	valBytecode = addStringToByteCode(val);
+
+	parser.data.insert(parser.data.end(), 
+		nameBytecode.begin(), nameBytecode.end());
+
+	parser.data.push_back(0x0D);
+
+	parser.data.insert(parser.data.end(), 
+		valBytecode.begin(), valBytecode.end());
+}
+
 void getData(std::vector<std::string> splicedProgram) {
 	for (auto chunk = splicedProgram.begin(); chunk != splicedProgram.end(); chunk++) {
 		std::string kw = *chunk;
-		parser.text.push_back(0x0E); // move
-		parser.text.push_back(0x0F); // veax
+		if (kw == "write") {
+			parser.text.push_back(0x0E); // move
+			parser.text.push_back(0x0F); // veax
 
-		if (kw == "write") parser.text.push_back(0x41);
-			
-		chunk++;
-		checkargs(chunk, 2, kw);
-		addArgsToData(chunk, 2);
+			parser.text.push_back(0x41);
+
+			chunk++;
+			checkargs(chunk, 2, kw);
+			addArgsToData(chunk, 2);
+			do { chunk++; } while (*chunk != ";");
+		}
+		else if ((chunk != splicedProgram.end()) && (*(chunk + 1) == "=")) {
+			declare(chunk);
+			chunk += 2;
+		}
 	}
 }
 

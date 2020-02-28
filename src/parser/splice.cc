@@ -47,13 +47,17 @@ void splice(std::string contents) {
 			case 'a' ... 'z':
 			case 'A' ... 'Z':
 			case '0' ... '9':
+			case '_':
 				splicedProgram.back() += *lttr;
 				break;
 			case ';':
-				splicedProgram.resize(splicedProgram.size() + 1);
+				splicedProgram.push_back(";");
+				if (lttr + 1 != contents.end())
+					splicedProgram.resize(splicedProgram.size()+1);
 				break;
-			// escape seq
+			// special characters
 			case  0 ... 31:
+				break;
 			case '\"':
 				inQuotes = ((inQuotes) ? 0 : 1);
 				splicedProgram.back() += *lttr;
@@ -66,13 +70,16 @@ void splice(std::string contents) {
 				if (inQuotes == true)
 					splicedProgram.back() += parseSpecial(lttr);
 				lttr++;
-				break; 
+				break;
 			case ',':
 			case '[':
 			case ']':
-				splicedProgram.resize(splicedProgram.size() + 1);				
+			case '=':
+				if (inQuotes != true) 
+					splicedProgram.resize(splicedProgram.size() + 1);				
 				splicedProgram.back() += *lttr;
-				splicedProgram.resize(splicedProgram.size() + 1);
+				if (inQuotes != true) 
+					splicedProgram.resize(splicedProgram.size() + 1);
 				break;
 			default:
 				splicedProgram.back() += *lttr;
