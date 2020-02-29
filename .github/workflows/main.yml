@@ -14,5 +14,6 @@ jobs:
         cmake .
         make -j$(nproc)
     - name: Test
+      run: |
         cd scripts
         ./test.sh
