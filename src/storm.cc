@@ -24,12 +24,13 @@
 int main(int argc, char const *argv[]) {
 	if (argc >= 2) {
 		if (std::string(argv[1]) == "-c") {
-			if (argc != 3) {
-				std::cerr << "Option '-c' requires filename\n";
+			if (argc < 4) {
+				std::cerr << "Command should be formatted as:\nstorm -c <in_filename> <out_filename>";
 				return EXIT_FAILURE;
 			}
 
 			program.filename = argv[2];
+			parser.outfile = argv[3];
 			splice(readFile());
 		}
 		else {

@@ -12,4 +12,7 @@ jobs:
     - name: Build
       run: |
         cmake .
-        make
+        make -j$(nproc)
+    - name: Test
+        cd scripts
+        ./test.sh

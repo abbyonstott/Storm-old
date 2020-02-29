@@ -167,7 +167,7 @@ void compile(std::vector<std::string> splicedProgram) {
 	getData(splicedProgram);
 	
 	// push compiled code to file
-	std::string compiledFileName = program.filename + "c";
+	std::string compiledFileName = parser.outfile;
 	std::vector<uint8_t> fullprogram;
 	
 	// start formatting data section

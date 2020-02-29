@@ -18,6 +18,8 @@
 #pragma once
 
 inline struct parser_t {
+    std::string outfile;
+
 	// next value identifier
 	unsigned int val_ident = 0;
 
@@ -28,7 +30,7 @@ inline struct parser_t {
 	std::vector<uint8_t> data = {0x0C};
 
 	// ".text" in nasm, initialized with data indicator for full program
-	std::vector<uint8_t> text = {0x0B}; 
+	std::vector<uint8_t> text = {0x0B};
 } parser;
 
 // general parser/compiler functions
