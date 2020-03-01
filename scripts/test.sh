@@ -46,7 +46,7 @@ for i in $( ls ../tests | grep .storm ); do
 			echo $i failed to execute
 			exit 0
 		fi
-	elif [ $1 = "--nofail" ]; then
+	elif [[ $1 = "--nofail" ]]; then
 		echo $i failed to compile
 		exit 1
 	fi

@@ -4,7 +4,6 @@ set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_STANDARD_REQUIRED on)
 set (CMAKE_CXX_EXTENSIONS off)
 set (CMAKE_CXX_COMPILER "g++")
-add_compile_options("-g")
 
 add_executable(storm
     src/storm.cc
@@ -12,5 +11,6 @@ add_executable(storm
     src/file/read.cc
     src/parser/splice.cc
     src/parser/parser.cc
+    src/parser/svalues.cc
     src/interpreter/interpreter.cc
 )

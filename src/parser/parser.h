@@ -20,13 +20,6 @@
 inline struct parser_t {
     std::string outfile;
 
-	// next value identifier
-	unsigned int val_ident = 0;
-
-	// bytecode representation of the last value identifier used
-	std::vector<uint8_t> byte_val_ident;
-    std::vector<std::string> names;
-
 	// ".data" in nasm, initialized with data indicator for full program
 	std::vector<uint8_t> data = {0x0C};
 
@@ -40,3 +33,8 @@ inline struct parser_t {
 void splice(std::string contents);
 // Compile the program into a file of bytecode
 void compile(std::vector<std::string> splicedProgram);
+
+// declare variables
+void declare(std::vector<std::string>::iterator &chunk);
+// add arg value to data
+void addArgsToData(std::vector<std::string>::iterator &chunk, int numargs, std::vector<Type> typesWanted);

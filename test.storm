@@ -1,1 +1,3 @@
-x = "Hello, World!";
+x = "Hello, World\n";
+y = x;
+write [y, "/dev/stdout"];

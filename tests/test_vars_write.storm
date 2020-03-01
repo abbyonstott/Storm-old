@@ -1,0 +1,2 @@
+x = "Hello, World!\n";
+write [x, "/dev/stdout"];

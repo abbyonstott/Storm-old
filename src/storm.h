@@ -23,6 +23,7 @@
 #include <cstring>
 #include <vector>
 #include <fstream>
+#include <algorithm>
 #include <unistd.h>
 #include <fcntl.h>
 

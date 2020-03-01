@@ -19,25 +19,7 @@
 #include "../storm.h"
 #include "interpreter.h"
 
-void allocateMemory(std::string::iterator loc) { // load data into memory
-	loc++;
-
-	while (*loc != 0x0B) {
-		if (char(*loc - 0x80) == '[') { // move past name declaration, will be used later
-			while (char(*loc - 0x80) != ']') loc++;
-			loc += 2;
-			interpreter.heap_ptrs.push_back(interpreter.heap.size());
-		}
-
-		
-		interpreter.heap.push_back(*loc);
-
-		loc++;
-	}
-	interpreter.heap_ptrs.push_back(interpreter.heap.size());
-}
-
-std::string getVal(std::string::iterator loc) {
+std::string getVal(std::string::iterator &loc) {
 	loc++;
 
 	std::vector<int> num_list;
@@ -61,8 +43,31 @@ std::string getVal(std::string::iterator loc) {
 		i++;
 	}
 
-	stripString(&value);
 	return value;
+}
+
+void allocateMemory(std::string::iterator loc) { // load data into memory
+	loc++;
+
+	while (*loc != 0x0B) {
+		if (char(*loc - 0x80) == '[') { // move past name declaration, will be used later
+			while (char(*loc - 0x80) != ']') loc++;
+			loc += 2;
+			interpreter.heap_ptrs.push_back(interpreter.heap.size());
+		}
+
+		// variable defined to be other variable
+		if (char(*loc - 0x80) == '[') {
+			for (char c : getVal(loc))
+				interpreter.heap.push_back(c + 0x80);
+		}
+		else { // var defined as literal
+			interpreter.heap.push_back(*loc);
+		}
+
+		loc++;
+	}
+	interpreter.heap_ptrs.push_back(interpreter.heap.size());
 }
 
 void move(std::string::iterator loc) {
@@ -82,6 +87,7 @@ void move(std::string::iterator loc) {
 			break;
 		case char('[' + 0x80):
 			interpreter.registers[reg] = getVal(loc);
+			stripString(&interpreter.registers[reg]);
 			break;
 	} 
 	
@@ -104,7 +110,6 @@ void execute(std::string::iterator loc) {
 
 void interpret(std::string contents) {
 	for (auto loc = contents.begin(); loc != contents.end(); loc++) {
-		
 		switch (*loc) {
 			case 0x0A:
 				execute(loc);
@@ -116,4 +121,5 @@ void interpret(std::string contents) {
 				break;
 		}
 	}
+	getchar();
 }
