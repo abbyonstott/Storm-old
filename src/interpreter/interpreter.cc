@@ -121,5 +121,4 @@ void interpret(std::string contents) {
 				break;
 		}
 	}
-	getchar();
 }
