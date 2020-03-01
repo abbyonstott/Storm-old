@@ -42,9 +42,15 @@ for i in $( ls ../tests | grep .storm ); do
 		if ../storm ../tests/compiled/${i}c > /dev/null; then
 			echo $i executed successful
 			executed=$((executed + 1))
+		elif [ $1 = "--nofail" ]; then
+			echo $i failed to execute
+			exit 0
 		fi
+	elif [ $1 = "--nofail" ]; then
+		echo $i failed to compile
+		exit 1
 	fi
 	total=$((total + 1))
 done
 
-echo $executed successful out of $compiled compiled. '\n'$total total tests
+echo $executed successful out of $compiled compiled. $'\n'$total total tests

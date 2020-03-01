@@ -25,6 +25,7 @@ inline struct parser_t {
 
 	// bytecode representation of the last value identifier used
 	std::vector<uint8_t> byte_val_ident;
+    std::vector<std::string> names;
 
 	// ".data" in nasm, initialized with data indicator for full program
 	std::vector<uint8_t> data = {0x0C};

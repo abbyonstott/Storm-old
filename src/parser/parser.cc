@@ -120,26 +120,21 @@ void addArgsToData(std::vector<std::string>::iterator &chunk, int numargs) {
 	parser.text.push_back(0x0A); // execute
 }
 
-void declare(std::vector<std::string>::iterator chunk) {
+void declare(std::vector<std::string>::iterator &chunk) {
 	std::string val, name = *chunk;
-	std::vector<uint8_t> nameBytecode, valBytecode;
+	std::vector<uint8_t> valBytecode;
 	chunk += 2;
+
+	parser.names.push_back(*chunk); // add name to list of names
 
 	if ((*chunk)[0] == '\"') { // string literal
 		val = *chunk;
-		stripString(&val);
+		addLitToData(val);
 	}
-	
-	nameBytecode = addStringToByteCode(name);
-	valBytecode = addStringToByteCode(val);
-
-	parser.data.insert(parser.data.end(), 
-		nameBytecode.begin(), nameBytecode.end());
-
-	parser.data.push_back(0x0D);
-
-	parser.data.insert(parser.data.end(), 
-		valBytecode.begin(), valBytecode.end());
+	else {
+		std::cerr << "Error: non-literal initialization of variables is not supported.\n";
+		exit(1);
+	}
 }
 
 void getData(std::vector<std::string> splicedProgram) {
@@ -158,7 +153,7 @@ void getData(std::vector<std::string> splicedProgram) {
 		}
 		else if ((chunk != splicedProgram.end()) && (*(chunk + 1) == "=")) {
 			declare(chunk);
-			chunk += 2;
+			chunk++;
 		}
 	}
 }

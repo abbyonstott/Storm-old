@@ -4,15 +4,15 @@
 ### VM instructions are reserved `0x0A` - `0x3F`
 Instruction  | Value
 ---------|-----------
-exec      | `0x0A`
+exec     | `0x0A`
 text     | `0x0B`
 data     | `0x0C`
-byte     | `0x0D`
+string   | `0x0D`
 move     | `0x0E`
-veax     | `0x0F`
-vebx     | `0x10`
-vecx     | `0x11`
-vedx     | `0x12`
+reg0     | `0x0F`
+reg1     | `0x10`
+reg2     | `0x11`
+reg3     | `0x12`
 
 ### Between `0x40` and `0x7E` are call numbers
 Call    |  value

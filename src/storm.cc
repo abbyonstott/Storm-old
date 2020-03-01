@@ -25,7 +25,7 @@ int main(int argc, char const *argv[]) {
 	if (argc >= 2) {
 		if (std::string(argv[1]) == "-c") {
 			if (argc < 4) {
-				std::cerr << "Command should be formatted as:\nstorm -c <in_filename> <out_filename>";
+				std::cerr << "Command should be formatted as:\nstorm -c <file_name> <binary_name>\n";
 				return EXIT_FAILURE;
 			}
 
