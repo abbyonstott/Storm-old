@@ -18,6 +18,7 @@
 
 #include "../Storm/storm.h"
 #include "interpreter.h"
+#include "../file/file.h"
 
 std::string getVal(std::string::iterator &loc) {
 	loc++;
@@ -39,7 +40,10 @@ std::string getVal(std::string::iterator &loc) {
 	int i = interpreter.heap_ptrs[num];
 
 	while(i < interpreter.heap_ptrs[num + 1]) {
-		value += ((interpreter.heap[interpreter.heap_ptrs[num]] > 0x09) ? interpreter.heap[i] - 0x80 : interpreter.heap[i] + '0');
+		value += ((interpreter.heap[interpreter.heap_ptrs[num]] > 0x09) 
+			? interpreter.heap[i] - 0x80 
+			: interpreter.heap[i] + '0'
+		);
 		i++;
 	}
 
@@ -100,11 +104,14 @@ void execute(std::string::iterator loc) {
 		case 0x40: // read
 		{
 			int fd = open(interpreter.registers[1].c_str(), O_RDONLY);
-
+			char c[std::stoi(interpreter.registers[2])];
+			
 			read(fd,
-				new char(),
-				std::stoi(interpreter.registers[2]));
+				c,
+				std::stoi(interpreter.registers[2]));				
+
 			close(fd);
+
 			break;
 		}
 		case 0x41: // write
@@ -116,6 +123,7 @@ void execute(std::string::iterator loc) {
 				interpreter.registers[1].size());
 			
 			close(fd);
+			
 			break;
 		}
 	}

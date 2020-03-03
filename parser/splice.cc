@@ -61,7 +61,6 @@ void splice(std::string contents) {
 			// special characters
 			case '\n':
 			case '\t':
-				std::cout << "test" << '\n';
 				if (lttr == contents.end()-1)
 					splicedProgram.pop_back();
 					// remove last empty line
