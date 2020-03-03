@@ -22,24 +22,25 @@ else
 	rm -r ../tests/compiled/*
 fi
 
-cd ..
-cmake .
+cd ../build
+autoreconf --install
+./configure
 make -j$(nproc)
 total=0
 compiled=0
 executed=0
 
-cd scripts
+cd ../scripts
 
 for i in $( ls ../tests | grep .storm ); do
 	# compile test
-	if ../storm -c ../tests/$i ../tests/compiled/${i}c; then
+	if ../build/storm -c ../tests/$i ../tests/compiled/${i}c; then
 		echo $i compiled successfully
 		compiled=$((compiled + 1))
 
 		# execute test
 		# don't output program text if not error
-		if ../storm ../tests/compiled/${i}c > /dev/null; then
+		if ../build/storm ../tests/compiled/${i}c > /dev/null; then
 			echo $i executed successful
 			executed=$((executed + 1))
 		elif [ $1 = "--nofail" ]; then

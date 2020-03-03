@@ -16,7 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "../storm.h"
+#include "../Storm/storm.h"
 #include "parser.h"
 
 char parseSpecial(std::string::iterator lttr) {

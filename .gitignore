@@ -1,10 +1,19 @@
-storm
 *.stormc
 Makefile
 
-CMakeFiles
-CMakeCache.txt
-cmake_install.cmake
-
-build/
 compiled/
+
+configure
+compile
+*.m4
+*.in
+depcomp
+install-sh
+missing
+*.log
+*.status
+autom4te.cache/
+.deps
+*.o
+storm
+.dirstamp

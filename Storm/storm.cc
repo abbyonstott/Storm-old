@@ -17,9 +17,9 @@
 */
 
 #include "storm.h"
-#include "file/file.h"
-#include "parser/parser.h"
-#include "interpreter/interpreter.h"
+#include "../file/file.h"
+#include "../parser/parser.h"
+#include "../interpreter/interpreter.h"
 
 int main(int argc, char const *argv[]) {
 	if (argc >= 2) {

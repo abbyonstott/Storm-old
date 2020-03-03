@@ -16,7 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "../storm.h"
+#include "../Storm/storm.h"
 #include "parser.h"
 
 // evaluate number of args given
@@ -48,14 +48,23 @@ void getData(std::vector<std::string> splicedProgram) {
 		std::string kw = *chunk;
 		if (kw == "write") {
 			parser.text.push_back(0x0E); // move
-			parser.text.push_back(0x0F); // veax
+			parser.text.push_back(0x0F); // reg0
 
-			parser.text.push_back(0x41);
+			parser.text.push_back(0x41); // write
 
 			chunk++;
 			checkargs(chunk, 2, kw);
 			addArgsToData(chunk, 2, {STRING, STRING});
 			do { chunk++; } while (*chunk != ";");
+		}
+		else if (kw == "read") {
+			parser.text.push_back(0x0E); // move
+			parser.text.push_back(0x0F); // reg0
+
+			parser.text.push_back(0x40); // read
+
+			chunk++;
+			checkargs(chunk, 2, kw);
 		}
 		else if ((chunk != splicedProgram.end()) && (*(chunk + 1) == "=")) {
 			declare(chunk);

@@ -1,3 +1,1 @@
-x = "Hello, World\n";
-y = x;
-write [y, "/dev/stdout"];
+read ["/dev/stdin", 1];

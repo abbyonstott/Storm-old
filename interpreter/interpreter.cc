@@ -16,7 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "../storm.h"
+#include "../Storm/storm.h"
 #include "interpreter.h"
 
 std::string getVal(std::string::iterator &loc) {
