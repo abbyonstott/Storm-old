@@ -8,7 +8,7 @@ Requires CMake 3.0 or higher
 **On Unix:**
 ```sh
 $ cd build
-$ autoreconf
+$ autoreconf --install
 $ ./configure
 $ make -j$(nproc)
 ```
