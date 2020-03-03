@@ -51,12 +51,20 @@ void splice(std::string contents) {
 				splicedProgram.back() += *lttr;
 				break;
 			case ';':
-				splicedProgram.push_back(";");
+				if (splicedProgram.back().size() != 0)
+					splicedProgram.push_back(";");
+				else
+					splicedProgram.back() = ";";
 				if (lttr + 1 != contents.end())
 					splicedProgram.resize(splicedProgram.size()+1);
 				break;
 			// special characters
-			case  0 ... 31:
+			case '\n':
+			case '\t':
+				std::cout << "test" << '\n';
+				if (lttr == contents.end()-1)
+					splicedProgram.pop_back();
+					// remove last empty line
 				break;
 			case '\"':
 				inQuotes = ((inQuotes) ? 0 : 1);

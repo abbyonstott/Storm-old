@@ -13,6 +13,7 @@ reg0     | `0x0F`
 reg1     | `0x10`
 reg2     | `0x11`
 reg3     | `0x12`
+integer  | `0x13`
 
 ### Between `0x40` and `0x7E` are call numbers
 Call    |  value

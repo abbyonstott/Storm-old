@@ -36,9 +36,9 @@ int numArgsGiven(std::vector<std::string>::iterator chunk) {
 
 // check if number of args is accurate
 void checkargs(std::vector<std::string>::iterator chunk, int required, std::string kw) {
-	if (*chunk != "[" || numArgsGiven(chunk) != 2) {
+	if (*chunk != "[" || numArgsGiven(chunk) != required) {
 		// trigger error if not correct number of args
-		std::cerr << "Compilation error: write requires 2 arguments\n";
+		std::cerr << "Compilation error: " << kw << " requires 2 arguments\n";
 		exit(EXIT_FAILURE);
 	}
 }
@@ -55,7 +55,7 @@ void getData(std::vector<std::string> splicedProgram) {
 			chunk++;
 			checkargs(chunk, 2, kw);
 			addArgsToData(chunk, 2, {STRING, STRING});
-			do { chunk++; } while (*chunk != ";");
+			while (*chunk != ";") chunk++;
 		}
 		else if (kw == "read") {
 			parser.text.push_back(0x0E); // move
@@ -65,6 +65,8 @@ void getData(std::vector<std::string> splicedProgram) {
 
 			chunk++;
 			checkargs(chunk, 2, kw);
+			addArgsToData(chunk, 2, {STRING, INTEGER});
+			while (*chunk != ";") chunk++;
 		}
 		else if ((chunk != splicedProgram.end()) && (*(chunk + 1) == "=")) {
 			declare(chunk);

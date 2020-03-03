@@ -95,11 +95,32 @@ void addArgsToData(std::vector<std::string>::iterator &chunk, int numargs, std::
 	for (int i = 0; i < numargs; i++, chunk++) {
 		// Identifier of var
 		std::vector<uint8_t> varIdent;
-		
+	
 		// If literal add it to data as a var and then add to varIdent
 		if ((*chunk)[0] == '"') {
+			if (typesWanted[i] != STRING) { 
+				//TODO: add name of function to error
+				std::cerr << "Error: Expected int for argument 1.\n";
+				exit(EXIT_FAILURE);
+			}
+			
 			std::string literal = *chunk;
 			addLitToData(literal);
+			svalues.names.push_back("");
+			varIdent = svalues.byte_val_ident;
+		}
+		else if (typesWanted[i] == INTEGER && isInt(*chunk)) {
+			changeByteVal();
+			svalues.val_ident++;
+			
+			parser.data.insert(parser.data.end(),
+				svalues.byte_val_ident.begin(), svalues.byte_val_ident.end());
+			parser.data.push_back(0x13);
+
+			// push_back value of int
+			for (char c : *chunk)
+				parser.data.push_back(c - '0');
+
 			svalues.names.push_back("");
 			varIdent = svalues.byte_val_ident;
 		}

@@ -39,3 +39,5 @@ enum Type {
 
 // return string without quotes
 void stripString(std::string *quoted);
+// determine if string contains int
+bool isInt(std::string str);
