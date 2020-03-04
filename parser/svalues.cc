@@ -42,6 +42,11 @@ std::vector<uint8_t> formatVar(int num) {
 void changeByteVal() {
 	std::vector<uint8_t> new_val_ident = formatVar(svalues.val_ident);
 	svalues.byte_val_ident = new_val_ident;
+
+	svalues.val_ident++;
+
+	parser.data.insert(parser.data.end(), 
+		svalues.byte_val_ident.begin(), svalues.byte_val_ident.end());
 }
 
 // Convert std::string to bytecode
@@ -111,11 +116,8 @@ void addArgsToData(std::vector<std::string>::iterator &chunk, int numargs, std::
 		}
 		else if (typesWanted[i] == INTEGER && isInt(*chunk)) {
 			changeByteVal();
-			svalues.val_ident++;
-			
-			parser.data.insert(parser.data.end(),
-				svalues.byte_val_ident.begin(), svalues.byte_val_ident.end());
-			parser.data.push_back(0x13);
+
+			parser.data.push_back(0x14);
 
 			// push_back value of int
 			for (char c : *chunk)
@@ -144,15 +146,40 @@ void declare(std::vector<std::string>::iterator &chunk) {
 
 	svalues.names.push_back(name); // add name to list of names
 
-	if ((*chunk)[0] == '\"') // string literal
+	if ((*chunk)[0] == '\"') // literal
 		addLitToData(*chunk);
+	else if (*(chunk+1) == "[") { // function
+		/*
+		running function and storing value in var:
+		
+		data
+		  [0] string "/dev/stdin"
+		  [1] integer 1
+		  [2] res
+
+		text
+		  move reg4, [2] ; buffer is always stored in reg4
+		  move reg0, 0x40 ; read
+		  move reg1, [0]  ; filename
+		  move reg2, [1] ; buffer size (1 in this case)
+		  exec ; mov value of file in reg1 to reg3
+		*/
+		changeByteVal();
+
+		parser.data.push_back(0x15); // res
+
+		parser.text.push_back(0x0E); // move
+		parser.text.push_back(0x13); // reg4
+		parser.text.insert(parser.text.end(),
+			svalues.byte_val_ident.begin(), svalues.byte_val_ident.end());
+		
+		// the next parsed character should be the function
+		chunk--;
+	}
 	else {
 		std::vector<uint8_t> value = findVar(*chunk);
 		changeByteVal();
-		svalues.val_ident++;
 		
-		parser.data.insert(parser.data.end(), 
-			svalues.byte_val_ident.begin(), svalues.byte_val_ident.end());
 		parser.data.push_back(0x0D);
 		parser.data.insert(parser.data.end(),
 			value.begin(), value.end());

@@ -20,10 +20,21 @@
 inline struct parser_t {
     std::string outfile;
 
-	// ".data" in nasm, initialized with data indicator for full program
+	/*
+	  ".data" in nasm, initialized with data indicator for full program
+	 
+	  structured like this in bytecode
+	 
+	  data
+	  	[0] type "value" ; for initialized
+	  	[1] res ; for uninitialized
+	 
+	  text
+	  	...
+	*/
 	std::vector<uint8_t> data = {0x0C};
 
-	// ".text" in nasm, initialized with data indicator for full program
+	// ".text" in nasm, initialized with text indicator for full program
 	std::vector<uint8_t> text = {0x0B};
 } parser;
 
