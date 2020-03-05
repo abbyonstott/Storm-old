@@ -16,6 +16,9 @@ reg3     | `0x12`
 reg4     | `0x13`
 integer  | `0x14`
 res      | `0x15`
+stack    | `0x16`
+push     | `0x17`
+pop      | `0x18`
 
 ### Between `0x40` and `0x7E` are call numbers
 Call    |  value

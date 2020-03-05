@@ -43,6 +43,18 @@ void checkargs(std::vector<std::string>::iterator chunk, int required, std::stri
 	}
 }
 
+void call_read(std::vector<std::string>::iterator &chunk) {
+	parser.text.push_back(0x0E); // move
+	parser.text.push_back(0x0F); // reg0
+
+	parser.text.push_back(0x40); // read
+
+	chunk++;
+	checkargs(chunk, 2, "read");
+	addArgsToData(chunk, 2, {STRING, INTEGER}); // read [STRING, INTEGER];
+	while (*chunk != ";") chunk++;
+}
+
 void getData(std::vector<std::string> splicedProgram) {
 	for (auto chunk = splicedProgram.begin(); chunk != splicedProgram.end(); chunk++) {
 		std::string kw = *chunk;
@@ -58,19 +70,10 @@ void getData(std::vector<std::string> splicedProgram) {
 			while (*chunk != ";") chunk++;
 		}
 		else if (kw == "read") {
-			parser.text.push_back(0x0E); // move
-			parser.text.push_back(0x0F); // reg0
-
-			parser.text.push_back(0x40); // read
-
-			chunk++;
-			checkargs(chunk, 2, kw);
-			addArgsToData(chunk, 2, {STRING, INTEGER}); // read [STRING, INTEGER];
-			while (*chunk != ";") chunk++;
+			call_read(chunk);
 		}
 		else if ((chunk != splicedProgram.end()) && (*(chunk + 1) == "=")) {
 			declare(chunk);
-			chunk++;
 		}
 	}
 }

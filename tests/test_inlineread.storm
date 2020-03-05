@@ -1,0 +1,2 @@
+x = read ["/dev/null", 1];
+write [x, "/dev/stdout"];

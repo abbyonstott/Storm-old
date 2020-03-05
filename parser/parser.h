@@ -44,8 +44,12 @@ inline struct parser_t {
 void splice(std::string contents);
 // Compile the program into a file of bytecode
 void compile(std::vector<std::string> splicedProgram);
+// add call to read to text and verify args (0x40)
+void call_read(std::vector<std::string>::iterator &chunk);
 
 // declare variables
 void declare(std::vector<std::string>::iterator &chunk);
+// increase value of identifiers
+void changeByteVal();
 // add arg value to data
 void addArgsToData(std::vector<std::string>::iterator &chunk, int numargs, std::vector<Type> typesWanted);

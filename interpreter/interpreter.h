@@ -28,7 +28,7 @@ inline struct interpreter_t {
 	std::vector<int> heap_ptrs;
 
 	// registers
-	std::string registers[4] = {"\0", "\0", "\0", "\0"};
+	std::string registers[5] = {"\0", "\0", "\0", "\0", "\0"};
 } interpreter;
 
 void interpret(std::string contents);

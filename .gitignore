@@ -1,5 +1,7 @@
 *.stormc
-Makefile
+*.sasm
+
+settings.json
 
 compiled/
 
@@ -17,3 +19,4 @@ autom4te.cache/
 *.o
 storm
 .dirstamp
+Makefile

@@ -78,14 +78,41 @@ std::vector<uint8_t> findVar(std::string name) {
 	return formatVar(vloc - svalues.names.begin());
 }
 
+// run function that is inside of value
+void inlineFunc(std::vector<std::string>::iterator &chunk) {
+	changeByteVal();
+	parser.data.push_back(0x15); // res
+	
+	std::vector<uint8_t> initial_val_ident = svalues.byte_val_ident;
+
+	// calls are handled differently than functions
+	if (*chunk == "read") {
+		/*
+		running read and storing value in var:
+		
+		data
+			[0] res
+			[1] string "/dev/stdin"
+			[2] integer 1
+
+		text
+			move reg0, 0x40 ; read
+			move reg1, [1]  ; filename
+			move reg2, [2] ; buffer size (1 in this case)
+			exec ; move value of file in reg1 to reg3
+			pop [0] ; take value and put into buffer
+		*/
+		call_read(chunk);
+		parser.text.push_back(0x18); // pop
+		parser.text.insert(parser.text.end(),
+			initial_val_ident.begin(), initial_val_ident.end());
+	}
+}
+
 void addLitToData(std::string literal) {
 	std::vector<uint8_t> strByteCode = addStringToByteCode(literal);
 
 	changeByteVal();
-	svalues.val_ident++;
-
-	parser.data.insert(parser.data.end(), 
-		svalues.byte_val_ident.begin(), svalues.byte_val_ident.end());
 
 	// type byte
 	parser.data.push_back(0x0D);
@@ -126,6 +153,10 @@ void addArgsToData(std::vector<std::string>::iterator &chunk, int numargs, std::
 			svalues.names.push_back("");
 			varIdent = svalues.byte_val_ident;
 		}
+		else if (*(chunk + 1) == "[") { // function
+			inlineFunc(chunk);
+			continue;
+		}
 		else
 			varIdent = findVar(*chunk);
 
@@ -149,32 +180,8 @@ void declare(std::vector<std::string>::iterator &chunk) {
 	if ((*chunk)[0] == '\"') // literal
 		addLitToData(*chunk);
 	else if (*(chunk+1) == "[") { // function
-		/*
-		running function and storing value in var:
-		
-		data
-		  [0] string "/dev/stdin"
-		  [1] integer 1
-		  [2] res
-
-		text
-		  move reg4, [2] ; buffer is always stored in reg4
-		  move reg0, 0x40 ; read
-		  move reg1, [0]  ; filename
-		  move reg2, [1] ; buffer size (1 in this case)
-		  exec ; mov value of file in reg1 to reg3
-		*/
-		changeByteVal();
-
-		parser.data.push_back(0x15); // res
-
-		parser.text.push_back(0x0E); // move
-		parser.text.push_back(0x13); // reg4
-		parser.text.insert(parser.text.end(),
-			svalues.byte_val_ident.begin(), svalues.byte_val_ident.end());
-		
-		// the next parsed character should be the function
-		chunk--;
+		inlineFunc(chunk);
+		return;
 	}
 	else {
 		std::vector<uint8_t> value = findVar(*chunk);
@@ -184,4 +191,5 @@ void declare(std::vector<std::string>::iterator &chunk) {
 		parser.data.insert(parser.data.end(),
 			value.begin(), value.end());
 	}
+	chunk++;
 }

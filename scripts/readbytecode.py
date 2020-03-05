@@ -19,6 +19,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import sys
 from enum import Enum
 
+if (len(sys.argv) != 3):
+	print("Command format:\n")
+	print("python readbytecode.py <input_file> <output_file>")
+
 # Dictionary of bytecode instructions
 instruct = {
 	0xA : "exec\n",
@@ -32,7 +36,10 @@ instruct = {
 	0x12 : "reg3,",
 	0x13 : "reg4,",
 	0x14 : "integer",
-	0x15 : "res",
+	0x15 : "res\n",
+	0x16 : "stack\n",
+	0x17 : "push",
+	0x18 : "pop",
 	0x40 : "read\n",
 	0x41 : "write\n"
 }
@@ -57,8 +64,9 @@ def classify(byte):
 		exit(1)
 
 
+cont = []
+
 with open(sys.argv[1], 'rb') as bytecode:
-	cont = []
 	for code in bytecode.read():
 		byte = code & 0xFF
 		bytetype = classify(byte)
@@ -73,8 +81,8 @@ with open(sys.argv[1], 'rb') as bytecode:
 			cont.append(chr(byte - 0x80))
 			
 			brack = False
-			if (len(cont) > 5):
-				brack = (chr(byte - 0x80) == ']' and ("reg" in cont[-5]))
+			if (len(cont) > 5): #Check if writing to register
+				brack = (chr(byte - 0x80) == ']' and ("reg" in cont[-5] or cont[-5] == 'pop'))
 
 
 			if brack or ((chr(byte - 0x80) == '"') and (cont[-2] != ' ')):
@@ -83,3 +91,8 @@ with open(sys.argv[1], 'rb') as bytecode:
 				cont.append(' ')
 
 	print(''.join(cont))
+
+with open(sys.argv[2], 'w') as outfile:
+	outfile.write(''.join(cont))
+
+print("Written to file \"{0}\"".format(sys.argv[2]))
