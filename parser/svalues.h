@@ -1,5 +1,5 @@
 /*
-    svalues.h - Struct for svalues.cc
+    svalues.h - Variable class and functions for svalues.cc
     Copyright (C) 2020 Ethan Onstott
 
     This program is free software: you can redistribute it and/or modify
