@@ -31,7 +31,6 @@ void RunProgram(std::vector<std::string> splicedProgram) {
 		}
 		else if ((chunk != splicedProgram.end()) && (*(chunk + 1) == "=")) {
 			declare(chunk, *chunk);
-			chunk++;
 		}
 	}
 }

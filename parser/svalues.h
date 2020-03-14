@@ -28,10 +28,12 @@ public:
 	// total number declared
 	static int TotalNumber;
 
+    // overload to allow name to be declared with variable
+    variable() {}
 	variable(std::string _name);
 };
 
-void find(std::string name, variable &buf);
+void find(std::string name, variable *buf);
 
 // declare variables
 void declare(std::vector<std::string>::iterator &chunk, std::string name);

@@ -21,8 +21,7 @@ function::function(std::string _name) {
 }
 
 // run function that is inside of value
-void inlineFunc(std::vector<std::string>::iterator &chunk) {
-	variable v("");
+void inlineFunc(std::vector<std::string>::iterator &chunk, variable &v) {
 	parser.data.push_back(0x15); // res
 
 	// calls are handled differently than functions
@@ -46,6 +45,7 @@ void inlineFunc(std::vector<std::string>::iterator &chunk) {
 		parser.text.push_back(0x18); // pop
 		parser.text.insert(parser.text.end(),
 			v.ident.begin(), v.ident.end());
+		v.type = STRING;
 	}
 }
 

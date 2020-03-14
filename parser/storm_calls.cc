@@ -19,7 +19,7 @@ void addCallArgsToData(StormVMCall call, std::vector<std::string>::iterator &chu
 	}
 	chunk++;
 	for (int i = 0; i < numargs; i++, chunk++) {
-		variable *arg;
+		variable *arg = new variable();
 	
 		// If literal add it to data as a var and then add to varIdent
 		if ((*chunk)[0] == '"' || isInt(*chunk)) {
@@ -27,11 +27,11 @@ void addCallArgsToData(StormVMCall call, std::vector<std::string>::iterator &chu
 			arg = &parser.vars.back();
 		}
 		else if ((*(chunk + 1))[0] == '[') { // function
-			inlineFunc(chunk);
+			inlineFunc(chunk, *arg);
 			continue;
 		}
 		else // variable
-			find(*chunk, *arg);
+			find(*chunk, arg);
 
 		// throw incorrect type error
 		if (arg->type != call.typesWanted[i]) {

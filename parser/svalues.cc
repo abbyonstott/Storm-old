@@ -56,13 +56,15 @@ std::vector<uint8_t> addStringToByteCode(std::string lit) {
 }
 
 // find var by name and return ident
-void find(std::string name, variable &buf) {
+void find(std::string name, variable *buf) {
 	for (variable v : parser.vars) {
-		if (v.name == name) {
-			buf = v;
+		if (v.name == name && v.name != "") {
+			*buf = v;
 			return;
 		}
 	}
+	std::cerr << "Error: Variable " << name << " not found.\n";
+	exit(1);
 }
 
 void addLitToData(std::string literal) {
@@ -77,7 +79,7 @@ void addLitToData(std::string literal) {
 void declare(std::vector<std::string>::iterator &chunk, std::string name) {
 	variable v(name);
 
-	if (*chunk == name)
+	if (name != "")
 		chunk += 2;
 
 	if ((*chunk)[0] == '\"') {// string literal
@@ -96,18 +98,27 @@ void declare(std::vector<std::string>::iterator &chunk, std::string name) {
 			parser.data.push_back(c - '0');
 	}
 	else if (*(chunk+1) == "[") { // function
-		inlineFunc(chunk);
+		inlineFunc(chunk, v);
+		parser.vars.push_back(v);
+
+		while (*chunk != ";") chunk++;
+
 		return;
 	}
 	else {
-		variable *match;
-		find(*chunk, *match);
+		variable *match = new variable();
+		find(*chunk, match);
 		v.type = match->type;
 		
 		parser.data.push_back(v.type);
 		parser.data.insert(parser.data.end(),
 			match->ident.begin(), match->ident.end());
+		
+		delete match;
 	}
 
 	parser.vars.push_back(v);
+
+	if (name != "")
+		chunk++;
 }

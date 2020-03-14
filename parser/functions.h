@@ -21,4 +21,4 @@ public:
 // evaluate number of args given from function
 int numArgsGiven(std::vector<std::string>::iterator chunk);
 // run function that is inside of value
-void inlineFunc(std::vector<std::string>::iterator &chunk);
+void inlineFunc(std::vector<std::string>::iterator &chunk, variable &v);
