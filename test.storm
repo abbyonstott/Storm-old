@@ -1,2 +1,0 @@
-x = read ["/dev/stdin", 1];
-write [x, "/dev/stdout"];

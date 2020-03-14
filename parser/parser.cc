@@ -19,67 +19,30 @@
 #include "../Storm/storm.h"
 #include "parser.h"
 
-// evaluate number of args given
-int numArgsGiven(std::vector<std::string>::iterator chunk) {
-	int arg = 1;
-	bool inquotes = 0;
-
-	do {	
-		if (*(chunk) == "," && inquotes == 0)
-			arg++;
-
-		chunk++;
-	} while (*chunk != "]");
-
-	return arg;
-}
-
-// check if number of args is accurate
-void checkargs(std::vector<std::string>::iterator chunk, int required, std::string kw) {
-	if (*chunk != "[" || numArgsGiven(chunk) != required) {
-		// trigger error if not correct number of args
-		std::cerr << "Compilation error: " << kw << " requires " << required << " arguments\n";
-		exit(EXIT_FAILURE);
-	}
-}
-
-void call_read(std::vector<std::string>::iterator &chunk) {
-	parser.text.push_back(0x0E); // move
-	parser.text.push_back(0x0F); // reg0
-
-	parser.text.push_back(0x40); // read
-
-	chunk++;
-	checkargs(chunk, 2, "read");
-	addArgsToData(chunk, 2, {STRING, INTEGER}); // read [STRING, INTEGER];
-	while (*chunk != ";") chunk++;
-}
-
-void getData(std::vector<std::string> splicedProgram) {
+void RunProgram(std::vector<std::string> splicedProgram) {
 	for (auto chunk = splicedProgram.begin(); chunk != splicedProgram.end(); chunk++) {
 		std::string kw = *chunk;
-		if (kw == "write") {
-			parser.text.push_back(0x0E); // move
-			parser.text.push_back(0x0F); // reg0
 
-			parser.text.push_back(0x41); // write
-
-			chunk++;
-			checkargs(chunk, 2, kw);
-			addArgsToData(chunk, 2, {STRING, STRING});
-			while (*chunk != ";") chunk++;
+		if (kw == "write" || kw == "read") {
+			StormCall(chunk);
 		}
-		else if (kw == "read") {
-			call_read(chunk);
+		else if (kw == "func") {
+			// create_func(chunk);
 		}
 		else if ((chunk != splicedProgram.end()) && (*(chunk + 1) == "=")) {
-			declare(chunk);
+			declare(chunk, *chunk);
+			chunk++;
 		}
 	}
 }
 
+int variable::TotalNumber = 0;
+int function::TotalNumber = 1;
+
 void compile(std::vector<std::string> splicedProgram) {
-	getData(splicedProgram);
+
+	RunProgram(splicedProgram);
+	parser.text.push_back(0x1A);
 	
 	// push compiled code to file
 	std::string compiledFileName = parser.outfile;

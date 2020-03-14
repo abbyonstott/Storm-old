@@ -6,5 +6,7 @@ storm_SOURCES = \
 ../parser/parser.cc \
 ../parser/svalues.cc \
 ../parser/splice.cc \
+../parser/functions.cc \
+../parser/storm_calls.cc \
 ../interpreter/interpreter.cc \
 ../file/read.cc

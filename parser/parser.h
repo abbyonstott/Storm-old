@@ -16,9 +16,12 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 #pragma once
+#include "svalues.h"
+#include "functions.h"
+#include "storm_calls.h"
 
 inline struct parser_t {
-    std::string outfile;
+	std::string outfile;
 
 	/*
 	  ".data" in nasm, initialized with data indicator for full program
@@ -34,8 +37,13 @@ inline struct parser_t {
 	*/
 	std::vector<uint8_t> data = {0x0C};
 
-	// ".text" in nasm, initialized with text indicator for full program
-	std::vector<uint8_t> text = {0x0B};
+	// ".text" in nasm, initialized with text indicator for full program and main function declaration
+	std::vector<uint8_t> text = {0x0B, '{' + 0x80, '0' + 0x80, '}' + 0x80};
+
+	// first function should be {1}, as main is {0}
+	std::vector<function> functions;
+
+	std::vector<variable> vars;
 } parser;
 
 // general parser/compiler functions
@@ -44,12 +52,3 @@ inline struct parser_t {
 void splice(std::string contents);
 // Compile the program into a file of bytecode
 void compile(std::vector<std::string> splicedProgram);
-// add call to read to text and verify args (0x40)
-void call_read(std::vector<std::string>::iterator &chunk);
-
-// declare variables
-void declare(std::vector<std::string>::iterator &chunk);
-// increase value of identifiers
-void changeByteVal();
-// add arg value to data
-void addArgsToData(std::vector<std::string>::iterator &chunk, int numargs, std::vector<Type> typesWanted);

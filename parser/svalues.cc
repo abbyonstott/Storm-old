@@ -17,16 +17,19 @@
 */
 
 #include "../Storm/storm.h"
-#include "svalues.h"
 #include "parser.h"
 
-// format var as [num] and return bytecode representation
-std::vector<uint8_t> formatVar(int num) {
-	std::vector<uint8_t> ident;
+/*
+ variable class constructor
+ set name
+ create ident
+*/
+variable::variable(std::string _name) {
+	name = _name;
 
 	char hval_ident[8];
 	// get hex of var
-	sprintf(hval_ident, "%X", num); 
+	sprintf(hval_ident, "%X", TotalNumber);
 
 	ident.push_back('[' + 0x80);
 
@@ -35,18 +38,11 @@ std::vector<uint8_t> formatVar(int num) {
 
 	ident.push_back(']' + 0x80);
 
-	return ident;
-}
-
-// change value identifier
-void changeByteVal() {
-	std::vector<uint8_t> new_val_ident = formatVar(svalues.val_ident);
-	svalues.byte_val_ident = new_val_ident;
-
-	svalues.val_ident++;
-
+	// add identifier to data
 	parser.data.insert(parser.data.end(), 
-		svalues.byte_val_ident.begin(), svalues.byte_val_ident.end());
+		ident.begin(), ident.end());
+
+	TotalNumber++;
 }
 
 // Convert std::string to bytecode
@@ -60,136 +56,58 @@ std::vector<uint8_t> addStringToByteCode(std::string lit) {
 }
 
 // find var by name and return ident
-std::vector<uint8_t> findVar(std::string name) {
-	std::vector<uint8_t> ident;
-
-	std::vector<std::string>::iterator vloc = std::find(
-		svalues.names.begin(), 
-		svalues.names.end(), 
-		name
-	); // find var
-	
-	// not found
-	if (vloc == svalues.names.end()) {
-		std::cerr << "Variable " << name << " not found.\n";
-		exit(EXIT_FAILURE); 
-	}
-
-	return formatVar(vloc - svalues.names.begin());
-}
-
-// run function that is inside of value
-void inlineFunc(std::vector<std::string>::iterator &chunk) {
-	changeByteVal();
-	parser.data.push_back(0x15); // res
-	
-	std::vector<uint8_t> initial_val_ident = svalues.byte_val_ident;
-
-	// calls are handled differently than functions
-	if (*chunk == "read") {
-		/*
-		running read and storing value in var:
-		
-		data
-			[0] res
-			[1] string "/dev/stdin"
-			[2] integer 1
-
-		text
-			move reg0, 0x40 ; read
-			move reg1, [1]  ; filename
-			move reg2, [2] ; buffer size (1 in this case)
-			exec ; move value of file in reg1 to reg3
-			pop [0] ; take value and put into buffer
-		*/
-		call_read(chunk);
-		parser.text.push_back(0x18); // pop
-		parser.text.insert(parser.text.end(),
-			initial_val_ident.begin(), initial_val_ident.end());
+void find(std::string name, variable &buf) {
+	for (variable v : parser.vars) {
+		if (v.name == name) {
+			buf = v;
+			return;
+		}
 	}
 }
 
 void addLitToData(std::string literal) {
 	std::vector<uint8_t> strByteCode = addStringToByteCode(literal);
-
-	changeByteVal();
-
-	// type byte
-	parser.data.push_back(0x0D);
 	
 	// the literal
 	parser.data.insert(parser.data.end(),
 		strByteCode.begin(), strByteCode.end());
 }
 
-void addArgsToData(std::vector<std::string>::iterator &chunk, int numargs, std::vector<Type> typesWanted) {
-	chunk++;
-	for (int i = 0; i < numargs; i++, chunk++) {
-		// Identifier of var
-		std::vector<uint8_t> varIdent;
-	
-		// If literal add it to data as a var and then add to varIdent
-		if ((*chunk)[0] == '"') {
-			if (typesWanted[i] != STRING) { 
-				//TODO: add name of function to error
-				std::cerr << "Error: Expected int for argument 1.\n";
-				exit(EXIT_FAILURE);
-			}
-			
-			std::string literal = *chunk;
-			addLitToData(literal);
-			svalues.names.push_back("");
-			varIdent = svalues.byte_val_ident;
-		}
-		else if (typesWanted[i] == INTEGER && isInt(*chunk)) {
-			changeByteVal();
+// declare variable
+void declare(std::vector<std::string>::iterator &chunk, std::string name) {
+	variable v(name);
 
-			parser.data.push_back(0x14);
+	if (*chunk == name)
+		chunk += 2;
 
-			// push_back value of int
-			for (char c : *chunk)
-				parser.data.push_back(c - '0');
-
-			svalues.names.push_back("");
-			varIdent = svalues.byte_val_ident;
-		}
-		else if (*(chunk + 1) == "[") { // function
-			inlineFunc(chunk);
-			continue;
-		}
-		else
-			varIdent = findVar(*chunk);
-
-		parser.text.push_back(0x0E);
-		parser.text.push_back(0x10 + i);
-		parser.text.insert(parser.text.end(), varIdent.begin(), varIdent.end());
-
-		// get through comma
-		chunk++;
-	}
-	parser.text.push_back(0x0A); // execute
-}
-
-void declare(std::vector<std::string>::iterator &chunk) {
-	std::string name = *chunk;
-	std::vector<uint8_t> valBytecode;
-	chunk += 2;
-
-	svalues.names.push_back(name); // add name to list of names
-
-	if ((*chunk)[0] == '\"') // literal
+	if ((*chunk)[0] == '\"') {// string literal
+		v.type = STRING;
+		parser.data.push_back(v.type);
+		
 		addLitToData(*chunk);
+	}
+	else if (isInt(*chunk)) {
+		v.type = INTEGER;
+
+		parser.data.push_back(v.type);
+		
+		// push_back value of int
+		for (char c : *chunk)
+			parser.data.push_back(c - '0');
+	}
 	else if (*(chunk+1) == "[") { // function
 		inlineFunc(chunk);
 		return;
 	}
 	else {
-		std::vector<uint8_t> value = findVar(*chunk);
-		changeByteVal();
+		variable *match;
+		find(*chunk, *match);
+		v.type = match->type;
 		
-		parser.data.push_back(0x0D);
+		parser.data.push_back(v.type);
 		parser.data.insert(parser.data.end(),
-			value.begin(), value.end());
+			match->ident.begin(), match->ident.end());
 	}
-	chunk++;
+
+	parser.vars.push_back(v);
 }

@@ -203,6 +203,9 @@ void interpret(std::string contents) {
 			case 0x0E:
 				move(loc);
 				break;
+			case 0x1A:
+				exit(0);
+				break;
 			case 0x18:
 				popStack(loc);
 				break;

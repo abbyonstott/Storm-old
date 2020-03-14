@@ -40,6 +40,9 @@ instruct = {
 	0x16 : "stack\n",
 	0x17 : "push",
 	0x18 : "pop",
+	0x19 : "ret\n",
+	0x1A : "exit\n",
+	0x1B : "bool",
 	0x40 : "read\n",
 	0x41 : "write\n"
 }
@@ -82,13 +85,15 @@ with open(sys.argv[1], 'rb') as bytecode:
 			
 			brack = False
 			if (len(cont) > 5): #Check if writing to register
-				brack = (chr(byte - 0x80) == ']' and ("reg" in cont[-5] or cont[-5] == 'pop'))
+				brack = (chr(byte - 0x80) ==']' and ("reg" in cont[-5] or cont[-5] == 'pop'))
 
 
 			if brack or ((chr(byte - 0x80) == '"') and (cont[-2] != ' ')):
 				cont.append("\n")
 			elif (chr(byte - 0x80) == ']'):
 				cont.append(' ')
+			elif (chr(byte - 0x80) == '}'):
+				cont.append('\n')
 
 	print(''.join(cont))
 

@@ -19,6 +19,9 @@ res      | `0x15`
 stack    | `0x16`
 push     | `0x17`
 pop      | `0x18`
+ret      | `0x19`
+exit     | `0x1A`
+bool     | `0x1B`
 
 ### Between `0x40` and `0x7E` are call numbers
 Call    |  value
