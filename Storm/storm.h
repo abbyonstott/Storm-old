@@ -15,24 +15,36 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-
 #pragma once
 
+// includes for everything
 #include <iostream>
+#include <unistd.h>
+#include <fcntl.h>
+
+#ifndef STORM_MAIN_SOURCE
+// these are not included in the main source file to save resources
+
 #include <string>
 #include <cstring>
 #include <vector>
 #include <fstream>
 #include <algorithm>
-#include <unistd.h>
-#include <fcntl.h>
 
 inline struct program_t {
 	std::string filename;
 } program;
 
+
+// Types and their bytecodes
 enum Type {
+	// for functions
 	VOID,
+
+	/*
+	in parser:
+	Use parser.data.push_back(INTEGER/STRING/BOOL);
+	*/
 	INTEGER = 0x14,
 	STRING = 0x0D,
 	BOOL = 0x1B,
@@ -42,3 +54,9 @@ enum Type {
 void stripString(std::string *quoted);
 // determine if string contains int
 bool isInt(std::string str);
+
+#endif // STORM_MAIN_SOURCE
+
+#ifndef NDEBUG
+#define ISDEBUG
+#endif // NDEBUG

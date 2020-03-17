@@ -22,6 +22,7 @@
 inline struct interpreter_t {
 	// virtual stack
 	std::stack<std::string> stack;
+    std::string contents;
 
 	// virtual heap
 	std::vector<uint8_t> heap;
@@ -31,4 +32,6 @@ inline struct interpreter_t {
 	std::string registers[5] = {"\0", "\0", "\0", "\0", "\0"};
 } interpreter;
 
-void interpret(std::string contents);
+std::string getVal(std::string::iterator &loc);
+
+void allocateMemory(std::string::iterator &loc);

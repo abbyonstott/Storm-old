@@ -26,7 +26,7 @@ std::string readFile() {
 	file.open(program.filename);
 
 	if (file.fail()) {
-		std::cerr << "Failed to open file\n";
+		std::cerr << "Error: Failed to open file " << program.filename << '\n';
 		exit(EXIT_FAILURE);
 	}
 	

@@ -18,5 +18,7 @@ autom4te.cache/
 .deps
 *.o
 storm
+stormcompiler
+stormrun
 .dirstamp
 Makefile

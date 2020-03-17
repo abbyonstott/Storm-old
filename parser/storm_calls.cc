@@ -36,29 +36,30 @@ void addCallArgsToData(StormVMCall call, std::vector<std::string>::iterator &chu
 	}
 	chunk++;
 	for (int i = 0; i < numargs; i++, chunk++) {
-		variable *arg = new variable();
+		variable arg;
 	
 		// If literal add it to data as a var and then add to varIdent
 		if ((*chunk)[0] == '"' || isInt(*chunk)) {
 			declare(chunk, "");
-			arg = &parser.vars.back();
+			arg = parser.vars.back();
 		}
 		else if ((*(chunk + 1))[0] == '[') { // function
-			inlineFunc(chunk, *arg);
+			inlineFunc(chunk, arg);
+
 			continue;
 		}
 		else // variable
-			find(*chunk, arg);
+			arg = find<variable>(*chunk);
 
 		// throw incorrect type error
-		if (arg->type != call.typesWanted[i]) {
-			std::cerr << "Error: " << call.name << " expects " << call.typesWanted[i] << " for argument " << i+1 << ". Got " << arg->type << " instead.\n";
+		if (arg.type != call.typesWanted[i]) {
+			std::cerr << "Error: " << call.name << " expects " << call.typesWanted[i] << " for argument " << i+1 << ". Got " << arg.type << " instead.\n";
 			exit(EXIT_FAILURE);
 		}
 
 		parser.text.push_back(0x0E);
 		parser.text.push_back(0x10 + i);
-		parser.text.insert(parser.text.end(), arg->ident.begin(), arg->ident.end());
+		parser.text.insert(parser.text.end(), arg.ident.begin(), arg.ident.end());
 
 		// get through comma
 		chunk++;

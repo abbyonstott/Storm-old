@@ -60,41 +60,6 @@ std::string getVal(std::string::iterator &loc) {
 	return value;
 }
 
-void allocateMemory(std::string::iterator &loc) { // load data into memory
-	loc++;
-
-	while (*loc != 0x0B) {
-		if (char(*loc - 0x80) == '[') {
-			while (char(*loc - 0x80) != ']') loc++;
-			loc++;
-			interpreter.heap_ptrs.push_back(interpreter.heap.size());
-		}
-
-		// not unitialized
-		if (*loc != 0x15) {
-			// variable defined to be other variable
-			if (char(*loc - 0x80) == '[') {
-				loc++;
-				for (char c : getVal(loc))
-					interpreter.heap.push_back(c + 0x80);
-			}
-			else { // var defined as literal
-				do {
-					loc++;
-					interpreter.heap.push_back(*loc);
-				} while (char(*(loc + 1) - 0x80) != '[' && *(loc +1) != 0x0B);
-			}
-		}
-		else {
-			interpreter.heap.push_back(0x15);
-		}
-
-		loc++;
-	}
-
-	interpreter.heap_ptrs.push_back(interpreter.heap.size());
-}
-
 // mov value to register
 void move(std::string::iterator loc) {
 	loc++;
@@ -191,8 +156,8 @@ void popStack(std::string::iterator &loc) {
 	interpreter.heap_ptrs[0] = 0;
 }
 
-void interpret(std::string contents) {
-	for (auto loc = contents.begin(); loc != contents.end(); loc++) {
+void runScope() {
+	for (auto loc = interpreter.contents.begin(); loc != interpreter.contents.end(); loc++) {
 		switch (*loc) {
 			case 0x0A:
 				execute(loc);
@@ -211,4 +176,11 @@ void interpret(std::string contents) {
 				break;
 		}
 	}
+}
+
+int main(int argc, char *argv[]) {
+	program.filename = argv[1];
+	interpreter.contents = readFile();
+
+	runScope();
 }

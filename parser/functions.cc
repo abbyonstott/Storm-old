@@ -37,6 +37,38 @@ function::function(std::string _name) {
 	TotalNumber++;
 }
 
+// find function by name and return ident
+template<>
+function find<function>(std::string name) {
+	for (function f : parser.functions) {
+		if (f.name == name)
+			return f;
+	}
+
+	std::cerr << "Error: function " << name << " not found!\n";
+	exit(EXIT_FAILURE);
+}
+
+void create_func(std::vector<std::string>::iterator &chunk, function *funcObj) {
+	while (*chunk != "{")
+		chunk++;
+
+	std::vector<uint8_t> tempText = parser.text;
+	parser.text = {};
+
+	// for now, will add to it after defined. Kept like this to add back to parser.text when finished
+	funcObj->loc = ((parser.functions.size() == 2) ? tempText.begin() : (parser.functions.end() - 1)->loc); 
+	funcObj->type = VOID;
+
+	for (uint8_t byte : funcObj->ident)
+		parser.text.push_back(byte);
+
+	funcObj->parse(chunk);
+
+	tempText.insert((funcObj->loc + 1), parser.text.begin(), parser.text.end());
+	parser.text = tempText;
+}
+
 // run function that is inside of value
 void inlineFunc(std::vector<std::string>::iterator &chunk, variable &v) {
 	parser.data.push_back(0x15); // res
@@ -80,3 +112,38 @@ int numArgsGiven(std::vector<std::string>::iterator chunk) {
 
 	return arg;
 }
+
+/*
+Example: Print Function
+
+Storm:
+
+func print[buf] {
+	write(buf, "/dev/stdout");
+}
+
+print["Hello, World!"];
+
+
+Bytecode Assembly:
+
+data
+	[0] string "/dev/stdout"
+	[1] string "Hello, World!\n"
+
+text
+{1} ; print function
+	pop reg1 pop argument 1 (buf) off stack into reg1
+
+	move reg0, write
+	mov reg2, [0] ; location (/dev/stdout)
+	
+	exec
+	
+	ret
+
+{0}
+	push [1]
+	call {1} ; print["Hello, World!\n"];
+	exit
+*/

@@ -1,0 +1,5 @@
+func hello[] {
+	write ["Hello, World!\n", "/dev/stdout"];
+}
+
+hello[];

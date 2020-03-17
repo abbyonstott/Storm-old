@@ -15,6 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
+#!/usr/bin/env python3
 
 import sys
 from enum import Enum
@@ -43,6 +44,7 @@ instruct = {
 	0x19 : "ret\n",
 	0x1A : "exit\n",
 	0x1B : "bool",
+	0x1C : "call",
 	0x40 : "read\n",
 	0x41 : "write\n"
 }

@@ -56,15 +56,15 @@ std::vector<uint8_t> addStringToByteCode(std::string lit) {
 }
 
 // find var by name and return ident
-void find(std::string name, variable *buf) {
+template<>
+variable find<variable>(std::string name) {
 	for (variable v : parser.vars) {
-		if (v.name == name && v.name != "") {
-			*buf = v;
-			return;
-		}
+		if (v.name == name && v.name != "")
+			return v;
 	}
+
 	std::cerr << "Error: Variable " << name << " not found.\n";
-	exit(1);
+	exit(EXIT_FAILURE);
 }
 
 void addLitToData(std::string literal) {
@@ -102,12 +102,12 @@ void declare(std::vector<std::string>::iterator &chunk, std::string name) {
 		parser.vars.push_back(v);
 
 		while (*chunk != ";") chunk++;
-
+		
 		return;
 	}
 	else {
-		variable *match = new variable();
-		find(*chunk, match);
+		// search for already defined variable
+		variable *match = new variable(find<variable>(name));
 		v.type = match->type;
 		
 		parser.data.push_back(v.type);

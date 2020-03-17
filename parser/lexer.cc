@@ -18,6 +18,7 @@
 
 #include "../Storm/storm.h"
 #include "parser.h"
+#include <regex>
 
 char parseSpecial(std::string::iterator lttr) {
 	char value;
@@ -36,7 +37,7 @@ char parseSpecial(std::string::iterator lttr) {
 	return value;
 }
 
-void splice(std::string contents) {
+void lexer(std::string contents) {
 	std::vector<std::string> splicedProgram;
 	splicedProgram.resize(splicedProgram.size() + 1);
 	bool inQuotes = 0;
@@ -72,6 +73,8 @@ void splice(std::string contents) {
 			case ' ':
 				if (inQuotes == true)
 					splicedProgram.back() += *lttr;
+				else if (splicedProgram.back() == "func")
+					splicedProgram.resize(splicedProgram.size() + 1);
 				break;
 			case '\\':
 				if (inQuotes == true)
@@ -79,13 +82,16 @@ void splice(std::string contents) {
 				lttr++;
 				break;
 			case ',':
+			case '{':
+			case '}':
 			case '[':
 			case ']':
 			case '=':
+
 				if (inQuotes != true) 
 					splicedProgram.resize(splicedProgram.size() + 1);				
 				splicedProgram.back() += *lttr;
-				if (inQuotes != true) 
+				if (inQuotes != true && *(lttr + 1) != ']' && *(lttr) != ']') 
 					splicedProgram.resize(splicedProgram.size() + 1);
 				break;
 			default:
@@ -93,5 +99,6 @@ void splice(std::string contents) {
 				break;
 		}
 	}
-	compile(splicedProgram);
+
+	parser.splicedProgram = splicedProgram;
 }

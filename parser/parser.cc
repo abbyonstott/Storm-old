@@ -19,30 +19,42 @@
 #include "../Storm/storm.h"
 #include "parser.h"
 
-void RunProgram(std::vector<std::string> splicedProgram) {
-	for (auto chunk = splicedProgram.begin(); chunk != splicedProgram.end(); chunk++) {
-		std::string kw = *chunk;
+#include "../file/file.h"
 
-		if (kw == "write" || kw == "read") {
+void function::parse(std::vector<std::string>::iterator &chunk) {
+	std::vector<variable> parentScope = parser.vars;
+
+	for (chunk; chunk != parser.splicedProgram.end(); chunk++) {
+		if (*chunk == "write" || *chunk == "read") {
 			StormCall(chunk);
 		}
-		else if (kw == "func") {
-			// create_func(chunk);
+		else if (*chunk == "func") {
+			chunk++; // skip from "func" keyword to name
+	
+			parser.functions.push_back(function(*chunk));
+
+			create_func(chunk,  &parser.functions.back());
 		}
-		else if ((chunk != splicedProgram.end()) && (*(chunk + 1) == "=")) {
+		else if ((chunk != parser.splicedProgram.end()) && (*(chunk + 1) == "=")) {
 			declare(chunk, *chunk);
+		}
+		else if (*chunk == "}") {
+			// exit scope
+			parser.text.push_back(0x19); // ret
+			break;
+		}
+		else if (*(chunk + 1) == "[") { // run function
+			parser.text.push_back(0x1C); // call
+			
+			for (uint8_t byte : find<function>(*chunk).ident)
+            			parser.text.push_back(byte);
+
+			while (*chunk != ";") { chunk++; }
 		}
 	}
 }
 
-int variable::TotalNumber = 0;
-int function::TotalNumber = 1;
-
-void compile(std::vector<std::string> splicedProgram) {
-
-	RunProgram(splicedProgram);
-	parser.text.push_back(0x1A);
-	
+void compile() {
 	// push compiled code to file
 	std::string compiledFileName = parser.outfile;
 	std::vector<uint8_t> fullprogram;
@@ -61,5 +73,35 @@ void compile(std::vector<std::string> splicedProgram) {
 	for (uint8_t byte : fullprogram) {
 		stormc << byte;
 	}
+
+	stormc.close();
+}
+
+int variable::TotalNumber = 0;
+int function::TotalNumber = 0;
+
+int main(int argc, char const *argv[]) {
+	if (argc != 3) {
+		std::cerr << "Format:\nstormcompiler <filename> <binaryname>\n";
+		return EXIT_FAILURE;
+	}
+
+	program.filename = std::string(argv[1]);
+	parser.outfile = std::string(argv[2]);
+	lexer(readFile());
+
+	function StormMain("main");
+	StormMain.loc = parser.text.end();
+	parser.functions.push_back(StormMain);
+
+	std::vector<std::string>::iterator chunk = parser.splicedProgram.begin();
+
+	parser.functions.back().parse(chunk);
+	parser.text.push_back(0x1A); // exit
+
+	compile();
+
+	std::cout << "Program " << parser.outfile << " compiled successfully.\n";
+	return EXIT_SUCCESS;
 }
 // bytecode is similar to nasm

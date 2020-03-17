@@ -22,6 +22,7 @@
 
 inline struct parser_t {
 	std::string outfile;
+	std::vector<std::string> splicedProgram;
 
 	/*
 	  ".data" in nasm, initialized with data indicator for full program
@@ -46,9 +47,8 @@ inline struct parser_t {
 	std::vector<variable> vars;
 } parser;
 
-// general parser/compiler functions
+template<class T>
+T find(std::string name) { return T(); }; 
 
 // Separate the program into lines;
-void splice(std::string contents);
-// Compile the program into a file of bytecode
-void compile(std::vector<std::string> splicedProgram);
+void lexer(std::string contents);
