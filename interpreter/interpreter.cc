@@ -20,46 +20,6 @@
 #include "interpreter.h"
 #include "../file/file.h"
 
-// get location of var in heap
-int getHeapLoc(std::string::iterator &loc) {
-	loc++;
-	std::vector<int> num_list;
-	int num = 0;
-
-	while (char(*loc - 0x80) != ']') {
-		// get integer representation of digit in char
-		num_list.push_back((int)(char(*loc - 0x80) - '0'));
-		loc++;
-	}
-
-	for (int n = 0; n < num_list.size(); n++)
-		num += num_list[n] * (n + 1);
-
-	return num;
-}
-
-std::string getVal(std::string::iterator &loc) {
-	std::string value;
-	
-	int num = getHeapLoc(loc);
-	int i = interpreter.heap_ptrs[num];
-
-	if (interpreter.heap[i] == 0x15) {
-		std::cerr << "Error: tried to access unitialized variable at address " << num << '\n';
-		exit(1);
-	}
-
-	while(i < interpreter.heap_ptrs[num + 1]) {
-		value += ((interpreter.heap[interpreter.heap_ptrs[num]] > 0x7f) 
-			? interpreter.heap[i] - 0x80 
-			: interpreter.heap[i] + '0'
-		);
-		i++;
-	}
-
-	return value;
-}
-
 // mov value to register
 void move(std::string::iterator loc) {
 	loc++;
@@ -129,58 +89,42 @@ void execute(std::string::iterator loc) {
 	}
 }
 
-void popStack(std::string::iterator &loc) {
-	loc++;
-	int num = getHeapLoc(loc);
-	std::string stop = interpreter.stack.top(); // value of top
-	int sval_size = stop.size();
-	int orig_size = interpreter.heap_ptrs[num + 1] - interpreter.heap_ptrs[num];
-	
-	interpreter.stack.pop();
+void runScope(std::string::iterator &startloc) {
+	bool endScope = false;
 
-	// put bytecode into heap
-	for (int i = 0; i < interpreter.heap_ptrs[num + 1]; i++)
-		interpreter.heap.erase(interpreter.heap.begin() + interpreter.heap_ptrs[num]);
-
-	for (int i = 0; i < sval_size; i++) {
-		interpreter.heap.insert(
-			interpreter.heap.begin() + interpreter.heap_ptrs[num] + i,
-			stop[i] + 0x80
-		);
-	}
-
-	// adjust interpreter.heap_ptrs
-	for (auto i = interpreter.heap_ptrs.begin() + num; i != interpreter.heap_ptrs.end(); i++)
-		*i += sval_size - orig_size;
-
-	interpreter.heap_ptrs[0] = 0;
-}
-
-void runScope() {
-	for (auto loc = interpreter.contents.begin(); loc != interpreter.contents.end(); loc++) {
+	for (auto loc = startloc; loc != interpreter.contents.end(); loc++) {
 		switch (*loc) {
-			case 0x0A:
+			case 0x0A: // exec
 				execute(loc);
 				break;
-			case 0x0C:
-				allocateMemory(loc);
-				break;
-			case 0x0E:
+			case 0x0E: // move
 				move(loc);
 				break;
-			case 0x1A:
+			case 0x1A: // exit
 				exit(0);
+			case 0x19: // ret
+				endScope = true;
 				break;
-			case 0x18:
+			case 0x18: // pop
 				popStack(loc);
 				break;
+			case 0x1C: // call
+				callFunc(loc);
+				break;
 		}
+
+		if (endScope) break;
 	}
 }
 
 int main(int argc, char *argv[]) {
 	program.filename = argv[1];
 	interpreter.contents = readFile();
+	std::string::iterator loc = interpreter.contents.begin();
 
-	runScope();
+	allocateMemory(loc);
+	createFunctions(loc);
+	runScope(loc);
+
+	return EXIT_SUCCESS;
 }

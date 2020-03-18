@@ -15,41 +15,38 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#define STORM_MAIN_SOURCE // don't add unnecessary includes
+// don't add unnecessary includes from storm.h
+#define STORM_MAIN_SOURCE
 
 #include "storm.h"
-// strerror()
-#include "string.h"
 
 int main(int argc, char const *argv[]) {
+	// if argv is not just the executable, then it must be run from "./command" 
+	const bool local = !(std::string(argv[0]) == "storm");
+
 	// status of execlp
 	int run;
 	std::string program;
+	std::vector<char*> _args;
 
 	if (argc >= 2) {
 		if (std::string(argv[1]) == "-c") {
+			// compile
 			if (argc != 4) {
 				std::cerr << "Command should be formatted as:\nstorm -c <file_name> <binary_name>\n";
 				return EXIT_FAILURE;
 			}
 
-			#ifdef ISDEBUG
-			program = "./stormcompiler";
-			#else
-			program = "stormcompiler";
-			#endif
-
-			run = execlp(program.c_str(), "stormcompiler", argv[2], argv[3], NULL);
-
+			program = ((local) ? "./stormcompiler" : "stormcompiler");
+			_args.push_back((char*)program.c_str());
+			_args.push_back((char*)argv[2]);
+			_args.push_back((char*)argv[3]);
 		}
 		else if (argc == 2) {
-			#ifdef ISDEBUG
-			program = "./stormrun";
-			#else
-			program = "stormrun";
-			#endif
-
-			run = execlp(program.c_str(), "stormrun", argv[1], NULL);
+			// run code
+			program = ((local) ? "./stormrun" : "stormrun");
+			_args.push_back((char*)program.c_str());
+			_args.push_back((char*)argv[1]);
 		}
 	}
 	else {
@@ -57,17 +54,18 @@ int main(int argc, char const *argv[]) {
 		return EXIT_FAILURE;
 	}
 
-	if (run == -1) {
+	_args.push_back(NULL);
+
+	// convert args to char *const array
+	char *args[_args.size()];
+	std::copy(_args.begin(), _args.end(), args);
+
+	if (execvp(program.c_str(), args) == -1) {
 		std::cerr << program << ": " << strerror(errno) << '\n';
 
-		if (errno == 2) {
-			// no such file or directory on program
-			#ifdef ISDEBUG
-			std::cerr << "Debug is enabled!\nMake sure have built all targets and are running from the build/ directory.\n";
-			#else
+		// no such file or directory on stormcompiler or stormrun
+		if (errno == 2)
 			std::cerr << "Error: install is broken. Core file " << program << " not found!\n";
-			#endif
-		}
 
 		return EXIT_FAILURE;
 	}

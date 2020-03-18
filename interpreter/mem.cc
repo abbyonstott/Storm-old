@@ -18,6 +18,106 @@
 #include "../Storm/storm.h"
 #include "interpreter.h"
 
+// get location of identifier in its vector
+int getLoc(std::string::iterator &loc, char endtoken) {
+	loc++;
+	std::vector<int> num_list;
+	int num = 0;
+
+	while (char(*loc - 0x80) != endtoken) {
+		// get integer representation of digit in char
+		num_list.push_back((int)(char(*loc - 0x80) - '0'));
+		loc++;
+	}
+
+	for (int n = 0; n < num_list.size(); n++)
+		num += num_list[n] * (n + 1);
+
+	return num;
+}
+
+std::string getVal(std::string::iterator &loc) {
+	std::string value;
+	
+	int num = getLoc(loc, ']');
+	int i = interpreter.heap_ptrs[num];
+
+	if (interpreter.heap[i] == 0x15) {
+		std::cerr << "Error: tried to access unitialized variable at address " << num << '\n';
+		exit(1);
+	}
+
+	while(i < interpreter.heap_ptrs[num + 1]) {
+		value += ((interpreter.heap[interpreter.heap_ptrs[num]] > 0x7f) 
+			? interpreter.heap[i] - 0x80 
+			: interpreter.heap[i] + '0'
+		);
+		i++;
+	}
+
+	return value;
+}
+
+void callFunc(std::string::iterator &loc) {
+	std::string::iterator locTemp = ++loc;
+
+	loc = interpreter.contents.begin() + getLoc(loc, '}');
+	runScope(loc);
+
+	loc = locTemp;
+	while (char(*loc - 0x80) != '}') loc++;
+}
+
+void popStack(std::string::iterator &loc) {
+	loc++;
+	int num = getLoc(loc, ']');
+	std::string stop = interpreter.stack.top(); // value of top
+	int sval_size = stop.size();
+	int orig_size = interpreter.heap_ptrs[num + 1] - interpreter.heap_ptrs[num];
+	
+	interpreter.stack.pop();
+
+	// put bytecode into heap
+	for (int i = 0; i < interpreter.heap_ptrs[num + 1]; i++)
+		interpreter.heap.erase(interpreter.heap.begin() + interpreter.heap_ptrs[num]);
+
+	for (int i = 0; i < sval_size; i++) {
+		interpreter.heap.insert(
+			interpreter.heap.begin() + interpreter.heap_ptrs[num] + i,
+			stop[i] + 0x80
+		);
+	}
+
+	// adjust interpreter.heap_ptrs
+	for (auto i = interpreter.heap_ptrs.begin() + num; i != interpreter.heap_ptrs.end(); i++)
+		*i += sval_size - orig_size;
+
+	interpreter.heap_ptrs[0] = 0;
+}
+
+void createFunctions(std::string::iterator &loc) {
+	loc++;
+	int numberOfFunctions = getLoc(loc, '}') + 1;
+
+	// the first function defined is always the last in the vector
+	interpreter.functions.resize(numberOfFunctions);
+	interpreter.functions.back() = ++loc;
+
+	if (numberOfFunctions > 1) {
+		while (true) {
+			while (*loc != 0x19) loc++;
+			loc++;
+
+			int num = getLoc(loc, '}');
+			
+			interpreter.functions[num] = ++loc;
+
+			if (num == 0)
+				break;
+		}
+	}
+}
+
 void allocateMemory(std::string::iterator &loc) { // load data into memory
 	loc++;
 

@@ -30,8 +30,14 @@ inline struct interpreter_t {
 
 	// registers
 	std::string registers[5] = {"\0", "\0", "\0", "\0", "\0"};
+
+    std::vector<std::string::iterator> functions;
 } interpreter;
 
 std::string getVal(std::string::iterator &loc);
+void runScope(std::string::iterator &startloc);
 
 void allocateMemory(std::string::iterator &loc);
+void createFunctions(std::string::iterator &loc);
+void popStack(std::string::iterator &loc);
+void callFunc(std::string::iterator &loc);

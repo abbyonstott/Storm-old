@@ -23,35 +23,39 @@ else
 fi
 
 cd ../build
+make clean
 autoreconf --install
-./configure
-make -j$(nproc)
+./configure --enable-debug=yes
+make -j$(nproc) all
 total=0
 compiled=0
 executed=0
 
-cd ../scripts
-
 for i in $( ls ../tests | grep .storm ); do
 	# compile test
-	if ../build/storm -c ../tests/$i ../tests/compiled/${i}c; then
+	if ./storm -c ../tests/$i ../tests/compiled/${i}c > /dev/null; then
 		echo $i compiled successfully
 		compiled=$((compiled + 1))
 
 		# execute test
 		# don't output program text if not error
-		if ../build/storm ../tests/compiled/${i}c > /dev/null; then
+		if ./storm ../tests/compiled/${i}c > /dev/null; then
 			echo $i executed successful
 			executed=$((executed + 1))
 		elif [ $1 = "--nofail" ]; then
 			echo $i failed to execute
 			exit 0
+		else
+			echo $i failed to execute
 		fi
 	elif [[ $1 = "--nofail" ]]; then
 		echo $i failed to compile
 		exit 1
+	else
+		echo $i failed to compile
 	fi
 	total=$((total + 1))
 done
 
 echo $executed successful out of $compiled compiled. $'\n'$total total tests
+cd ../scripts

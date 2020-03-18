@@ -21,13 +21,12 @@
 #include <iostream>
 #include <unistd.h>
 #include <fcntl.h>
+#include <vector>
+#include <string>
+#include <cstring>
 
 #ifndef STORM_MAIN_SOURCE
 // these are not included in the main source file to save resources
-
-#include <string>
-#include <cstring>
-#include <vector>
 #include <fstream>
 #include <algorithm>
 
@@ -56,7 +55,3 @@ void stripString(std::string *quoted);
 bool isInt(std::string str);
 
 #endif // STORM_MAIN_SOURCE
-
-#ifndef NDEBUG
-#define ISDEBUG
-#endif // NDEBUG

@@ -107,7 +107,7 @@ void declare(std::vector<std::string>::iterator &chunk, std::string name) {
 	}
 	else {
 		// search for already defined variable
-		variable *match = new variable(find<variable>(name));
+		variable *match = new variable(find<variable>(*chunk));
 		v.type = match->type;
 		
 		parser.data.push_back(v.type);
