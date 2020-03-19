@@ -15,7 +15,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-
 #pragma once
 
 class variable {
@@ -23,7 +22,7 @@ public:
 	std::vector<uint8_t> ident;
 	std::string name;
 
-	Type type;
+	StormType type;
 
 	// total number declared
 	static int TotalNumber;

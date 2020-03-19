@@ -23,9 +23,9 @@ public:
 	std::string name;
 
 	// return type
-	Type type;
+	StormType type;
 	// args
-	std::vector<Type> args;
+	std::vector<StormType> args;
 
 	// total number declared
 	static int TotalNumber;

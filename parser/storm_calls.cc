@@ -26,7 +26,7 @@ StormVMCall determineCall(std::string kw) {
 }
 
 void addCallArgsToData(StormVMCall call, std::vector<std::string>::iterator &chunk) {
-	int numargs = call.typesWanted.size();
+	size_t numargs = call.typesWanted.size();
 
 	// Determine if call gives correct number of args
 	if (numArgsGiven(chunk) != numargs) {
@@ -53,7 +53,7 @@ void addCallArgsToData(StormVMCall call, std::vector<std::string>::iterator &chu
 
 		// throw incorrect type error
 		if (arg.type != call.typesWanted[i]) {
-			std::cerr << "Error: " << call.name << " expects " << call.typesWanted[i] << " for argument " << i+1 << ". Got " << arg.type << " instead.\n";
+			std::cerr << "Error: " << call.name << " expects " << (int)call.typesWanted[i] << " for argument " << i+1 << ". Got " << (int)arg.type << " instead.\n";
 			exit(EXIT_FAILURE);
 		}
 

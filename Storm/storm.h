@@ -19,11 +19,18 @@
 
 // includes for everything
 #include <iostream>
-#include <unistd.h>
 #include <fcntl.h>
 #include <vector>
 #include <string>
 #include <cstring>
+#include <assert.h>
+
+#ifdef _WIN32
+#include <windows.h>
+#include <io.h>
+#else
+#include <unistd.h>
+#endif // _WIN32
 
 #ifndef STORM_MAIN_SOURCE
 // these are not included in the main source file to save resources
@@ -36,9 +43,9 @@ inline struct program_t {
 
 
 // Types and their bytecodes
-enum Type {
+enum class StormType {
 	// for functions
-	VOID,
+	SVOID,
 
 	/*
 	in parser:

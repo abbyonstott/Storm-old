@@ -20,7 +20,12 @@
 
 #include "storm.h"
 
-int main(int argc, char const *argv[]) {
+/*
+ Because Windows uses different functions to execute a process than POSIX, 
+ there needs to be more than one main function.
+*/
+#ifndef _WIN32
+int POSIX_main(int argc, char const* argv[]) {
 	// if argv is not just the executable, then it must be run from "./command" 
 	const bool local = !(std::string(argv[0]) == "storm");
 
@@ -57,7 +62,7 @@ int main(int argc, char const *argv[]) {
 	_args.push_back(NULL);
 
 	// convert args to char *const array
-	char *args[_args.size()];
+	char* args[_args.size()];
 	std::copy(_args.begin(), _args.end(), args);
 
 	if (execvp(program.c_str(), args) == -1) {
@@ -71,4 +76,76 @@ int main(int argc, char const *argv[]) {
 	}
 
 	return EXIT_SUCCESS;
+}
+#else
+int WIN32_main(int argc, char const* argv[]) {
+	const bool local = !(std::string(argv[0]) == "storm.exe");
+	STARTUPINFO startinfo;
+	PROCESS_INFORMATION processinfo;
+
+	SecureZeroMemory(&startinfo, sizeof(startinfo));
+	startinfo.cb = sizeof(startinfo);
+	SecureZeroMemory(&processinfo, sizeof(processinfo));
+
+	std::string args, filename;
+
+	if (argc >= 2) {
+		if (std::string(argv[1]) == "-c") {
+			if (argc != 4) {
+				std::cerr << "Command should be formatted as:\nstorm -c <file_name> <binary_name>\n";
+				return EXIT_FAILURE;
+			}
+			filename = "stormcompiler.exe ";
+
+			args += filename;
+			args += std::string(argv[2]);
+			args += " ";
+			args += std::string(argv[3]);
+		}
+		else if (argc == 2) {
+			filename = "stormrun.exe ";
+			args += filename;
+			args += std::string(argv[1]);
+		}
+	}
+	else {
+		std::cerr << "Format:\nstorm [options]...\n";
+		return EXIT_FAILURE;
+	}
+
+	if (!CreateProcess(NULL,
+		(LPSTR)args.c_str(),
+		NULL,
+		NULL,
+		false,
+		0,
+		NULL,
+		NULL,
+		&startinfo,
+		&processinfo)
+	)
+	{
+		std::cerr << "Error: process failed with errno: " << GetLastError() << '\n';
+		if (GetLastError() == ERROR_FILE_NOT_FOUND) {
+			std::cerr << "install is broken. Core file " << filename << "not found!\n";
+		}
+		return EXIT_FAILURE;
+	}
+
+	WaitForSingleObject(processinfo.hProcess, INFINITE);
+	CloseHandle(processinfo.hProcess);
+	CloseHandle(processinfo.hThread);
+
+	return EXIT_SUCCESS;
+}
+#endif // WIN32
+
+
+
+int main(int argc, char const *argv[]) {
+#ifndef _WIN32
+	return POSIX_main(argc, argv);
+#else
+	return WIN32_main(argc, argv);
+#endif // _WIN32
 }

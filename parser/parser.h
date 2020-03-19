@@ -48,7 +48,11 @@ inline struct parser_t {
 } parser;
 
 template<class T>
-T find(std::string name) { return T(); }; 
+T find(std::string name) { return T(); };
+template<>
+variable find<variable>(std::string name);
+template<>
+function find<function>(std::string name);
 
 // Separate the program into lines;
 void lexer(std::string contents);

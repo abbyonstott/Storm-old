@@ -32,7 +32,7 @@ compiled=0
 executed=0
 
 for i in $( ls ../tests | grep .storm ); do
-	# compile test
+# compile test
 	if ./storm -c ../tests/$i ../tests/compiled/${i}c > /dev/null; then
 		echo $i compiled successfully
 		compiled=$((compiled + 1))

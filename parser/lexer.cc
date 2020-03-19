@@ -21,7 +21,7 @@
 #include <regex>
 
 char parseSpecial(std::string::iterator lttr) {
-	char value;
+	char value = 0;
 
 	lttr++; // go to next char
 	switch (*lttr) {
@@ -43,61 +43,45 @@ void lexer(std::string contents) {
 	bool inQuotes = 0;
 
 	for (auto lttr = contents.begin(); lttr != contents.end(); lttr++) {
-		switch (*lttr) {
-			// keyword or identifier
-			case 'a' ... 'z':
-			case 'A' ... 'Z':
-			case '0' ... '9':
-			case '_':
-				splicedProgram.back() += *lttr;
-				break;
-			case ';':
-				if (splicedProgram.back().size() != 0)
-					splicedProgram.push_back(";");
-				else
-					splicedProgram.back() = ";";
-				if (lttr + 1 != contents.end())
-					splicedProgram.resize(splicedProgram.size()+1);
-				break;
-			// special characters
-			case '\n':
-			case '\t':
-				if (lttr == contents.end()-1)
-					splicedProgram.pop_back();
-					// remove last empty line
-				break;
-			case '\"':
-				inQuotes = ((inQuotes) ? 0 : 1);
-				splicedProgram.back() += *lttr;
-				break;
-			case ' ':
-				if (inQuotes == true)
-					splicedProgram.back() += *lttr;
-				else if (splicedProgram.back() == "func")
-					splicedProgram.resize(splicedProgram.size() + 1);
-				break;
-			case '\\':
-				if (inQuotes == true)
-					splicedProgram.back() += parseSpecial(lttr);
-				lttr++;
-				break;
-			case ',':
-			case '{':
-			case '}':
-			case '[':
-			case ']':
-			case '=':
+		// keyword or identifier
+		if (*lttr == ';') {
+			if (splicedProgram.back().size() != 0)
+				splicedProgram.push_back(";");
+			else
+				splicedProgram.back() = ";";
 
-				if (inQuotes != true) 
-					splicedProgram.resize(splicedProgram.size() + 1);				
-				splicedProgram.back() += *lttr;
-				if (inQuotes != true && *(lttr + 1) != ']' && *(lttr) != ']') 
-					splicedProgram.resize(splicedProgram.size() + 1);
-				break;
-			default:
-				splicedProgram.back() += *lttr;
-				break;
+			if (lttr + 1 != contents.end())
+				splicedProgram.resize(splicedProgram.size() + 1);
 		}
+		else if (*lttr == '\n' || *lttr == '\t') {
+			// remove last empty line
+			if (lttr == contents.end()-1)
+				splicedProgram.pop_back();
+		}
+		else if (*lttr == '\"') {
+			inQuotes = ((inQuotes) ? 0 : 1);
+			splicedProgram.back() += *lttr;
+		}
+		else if (*lttr == ' ') {
+			if (inQuotes == true)
+				splicedProgram.back() += *lttr;
+			else if (splicedProgram.back() == "func")
+				splicedProgram.resize(splicedProgram.size() + 1);
+		}
+		else if (*lttr == '\\') {
+			if (inQuotes == true)
+				splicedProgram.back() += parseSpecial(lttr);
+			lttr++;
+		}
+		else if (*lttr == ',' || *lttr == '{' || *lttr == '}' || *lttr == '[' || *lttr == ']' || *lttr == '=') {
+			if (inQuotes != true)
+				splicedProgram.resize(splicedProgram.size() + 1);
+			splicedProgram.back() += *lttr;
+			if (inQuotes != true && *(lttr + 1) != ']' && *(lttr) != ']')
+				splicedProgram.resize(splicedProgram.size() + 1);
+		}
+		else
+			splicedProgram.back() += *lttr;
 	}
 
 	parser.splicedProgram = splicedProgram;

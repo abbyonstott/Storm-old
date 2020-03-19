@@ -25,7 +25,12 @@ function::function(std::string _name) {
 	char hval_ident[8];
 
 	// hex form of hval
+#ifndef WIN32
 	sprintf(hval_ident, "%X", TotalNumber);
+#else
+	sprintf_s(hval_ident, "%X", TotalNumber);
+#endif // WIN32
+
 
 	ident.push_back('{' + 0x80);
 
@@ -58,7 +63,7 @@ void create_func(std::vector<std::string>::iterator &chunk, function *funcObj) {
 
 	// for now, will add to it after defined. Kept like this to add back to parser.text when finished
 	funcObj->loc = ((parser.functions.size() == 2) ? tempText.begin() : (parser.functions.end() - 1)->loc); 
-	funcObj->type = VOID;
+	funcObj->type = StormType::SVOID;
 
 	for (uint8_t byte : funcObj->ident)
 		parser.text.push_back(byte);
@@ -94,7 +99,7 @@ void inlineFunc(std::vector<std::string>::iterator &chunk, variable &v) {
 		parser.text.push_back(0x18); // pop
 		parser.text.insert(parser.text.end(),
 			v.ident.begin(), v.ident.end());
-		v.type = STRING;
+		v.type = StormType::STRING;
 	}
 }
 

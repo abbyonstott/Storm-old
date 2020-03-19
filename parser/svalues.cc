@@ -29,7 +29,11 @@ variable::variable(std::string _name) {
 
 	char hval_ident[8];
 	// get hex of var
+#ifndef WIN32
 	sprintf(hval_ident, "%X", TotalNumber);
+#else
+	sprintf_s(hval_ident, "%X", TotalNumber);
+#endif // WIN32
 
 	ident.push_back('[' + 0x80);
 
@@ -83,15 +87,15 @@ void declare(std::vector<std::string>::iterator &chunk, std::string name) {
 		chunk += 2;
 
 	if ((*chunk)[0] == '\"') {// string literal
-		v.type = STRING;
-		parser.data.push_back(v.type);
+		v.type = StormType::STRING;
+		parser.data.push_back((int)v.type);
 		
 		addLitToData(*chunk);
 	}
 	else if (isInt(*chunk)) {
-		v.type = INTEGER;
+		v.type = StormType::INTEGER;
 
-		parser.data.push_back(v.type);
+		parser.data.push_back((int)v.type);
 		
 		// push_back value of int
 		for (char c : *chunk)
@@ -110,7 +114,7 @@ void declare(std::vector<std::string>::iterator &chunk, std::string name) {
 		variable *match = new variable(find<variable>(*chunk));
 		v.type = match->type;
 		
-		parser.data.push_back(v.type);
+		parser.data.push_back((int)v.type);
 		parser.data.insert(parser.data.end(),
 			match->ident.begin(), match->ident.end());
 		
