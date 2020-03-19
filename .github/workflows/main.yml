@@ -3,7 +3,7 @@ name: CI
 on: [push]
 
 jobs:
-  build:
+  build-linux:
 
     runs-on: ubuntu-latest
 
@@ -19,3 +19,15 @@ jobs:
       run: |
         cd scripts
         ./test.sh --nofail
+  build-win:
+
+    runs-on: windows-latest 
+
+    steps:
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.0
+
+    - name: Build
+      run: |
+        cd Windows
+        msbuild
