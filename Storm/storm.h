@@ -28,6 +28,8 @@
 #ifdef _WIN32
 #include <windows.h>
 #include <io.h>
+
+#define WIN32_LEAN_AND_MEAN
 #else
 #include <unistd.h>
 #endif // _WIN32
