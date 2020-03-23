@@ -3,8 +3,7 @@ name: CI
 on: [push]
 
 jobs:
-  build-linux:
-
+  linux:
     runs-on: ubuntu-latest
 
     steps:
@@ -21,8 +20,8 @@ jobs:
       run: |
         cd scripts
         ./test.sh --nofail
-  build-win:
 
+  windows:
     runs-on: windows-latest 
 
     steps:
