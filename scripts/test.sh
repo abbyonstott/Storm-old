@@ -44,7 +44,7 @@ for i in $( ls ../tests | grep .storm ); do
 			executed=$((executed + 1))
 		elif [ $1 = "--nofail" ]; then
 			echo $i failed to execute
-			exit 0
+			exit 1
 		else
 			echo $i failed to execute
 		fi
