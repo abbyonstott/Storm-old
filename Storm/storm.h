@@ -24,6 +24,7 @@
 #include <string>
 #include <cstring>
 #include <assert.h>
+#include <exception>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -50,12 +51,20 @@ enum class StormType {
 	SVOID,
 
 	/*
-	in parser:
-	Use parser.data.push_back(INTEGER/STRING/BOOL);
+	 * in parser:
+	 * Use parser.data.push_back((uint8_t)StormType::TYPE);
 	*/
 	INTEGER = 0x14,
 	STRING = 0x0D,
 	BOOL = 0x1B,
+	RESERVE = 0x15
+};
+
+// Something was referenced that doesn't exist
+struct NameError : public std::exception {
+	const char * what() const throw() {
+		return "NameError: ";
+	}
 };
 
 // return string without quotes

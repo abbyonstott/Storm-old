@@ -1,19 +1,19 @@
 /*
-    functions.h - Function class and functions
-    Copyright (C) 2020 Ethan Onstott
+	functions.h - Function class and functions
+	Copyright (C) 2020 Ethan Onstott
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 #pragma once
 
@@ -25,13 +25,19 @@ public:
 	// return type
 	StormType type;
 	// args
-	std::vector<StormType> args;
+	std::vector<variable> args;
 
 	// total number declared
 	static int TotalNumber;
 	
-	// starts at the end of the contents of the function (the "ret")
-	std::vector<uint8_t>::iterator loc;
+	/*
+	 * The function's text size + the offset of the last one
+	 * or the sum off all text sizes for each function
+	 * 
+	 * If this is the first defined, parser.functions[parser.functions.size() - 2].offset
+	 * is 0
+	*/
+	int offset;
 
 	function() = default;
 	function(std::string _name);
@@ -39,6 +45,8 @@ public:
 	void parse(std::vector<std::string>::iterator &chunk);
 
 	~function() = default;
+
+	void run(std::vector<std::string>::iterator &chunk);
 };
 
 // evaluate number of args given from function

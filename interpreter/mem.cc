@@ -1,19 +1,19 @@
 /*
-    mem.cc - interpreter memory handling
-    Copyright (C) 2020 Ethan Onstott
+	mem.cc - interpreter memory handling
+	Copyright (C) 2020 Ethan Onstott
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 #include "../Storm/storm.h"
 #include "interpreter.h"
@@ -42,7 +42,7 @@ std::string getVal(std::string::iterator &loc) {
 	int num = getLoc(loc, ']');
 	int i = interpreter.heap_ptrs[num];
 
-	if (interpreter.heap[i] == 0x15) {
+	if (interpreter.heap[i] == (uint8_t)StormType::RESERVE) {
 		std::cerr << "Error: tried to access unitialized variable at address " << num << '\n';
 		exit(1);
 	}
@@ -129,7 +129,7 @@ void allocateMemory(std::string::iterator &loc) { // load data into memory
 		}
 
 		// not unitialized
-		if (*loc != 0x15) {
+		if (*loc != (uint8_t)StormType::RESERVE) {
 			// variable defined to be other variable
 			if (char(*loc - 0x80) == '[') {
 				loc++;
@@ -144,7 +144,7 @@ void allocateMemory(std::string::iterator &loc) { // load data into memory
 			}
 		}
 		else {
-			interpreter.heap.push_back(0x15);
+			interpreter.heap.push_back((uint8_t)StormType::RESERVE);
 		}
 
 		loc++;

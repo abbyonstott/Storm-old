@@ -1,19 +1,19 @@
 /*
-    parser.cc - Parse and Compile the program
-    Copyright (C) 2020 Ethan Onstott
+	parser.cc - Parse and Compile the program
+	Copyright (C) 2020 Ethan Onstott
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "../Storm/storm.h"
@@ -43,13 +43,24 @@ void function::parse(std::vector<std::string>::iterator &chunk) {
 			parser.text.push_back(0x19); // ret
 			break;
 		}
-		else if (*(chunk + 1) == "[") { // run function
-			parser.text.push_back(0x1C); // call
-			
-			for (uint8_t byte : find<function>(*chunk).ident)
-            			parser.text.push_back(byte);
+		else if (*(chunk + 1) == "(") { // run function
+			function *f;
+
+			try {
+				f = new function(find<function>(*chunk));
+			}
+			catch(NameError& e) {
+				std::cerr << e.what() << "Function " << *chunk << " not found!\n";
+				exit(EXIT_FAILURE);
+			}
+
+			f->run(chunk);
 
 			while (*chunk != ";") { chunk++; }
+		}
+		else {
+			std::cerr << NameError().what() << *chunk << " is not a recognized keyword or defined value.\n";
+			exit(EXIT_FAILURE);
 		}
 	}
 }
@@ -91,13 +102,18 @@ int main(int argc, char const *argv[]) {
 	lexer(readFile());
 
 	function StormMain("main");
-	StormMain.loc = parser.text.end();
+
+	for (uint8_t byte : StormMain.ident)
+		parser.text.push_back(byte);
+
+	StormMain.offset = 0;
 	parser.functions.push_back(StormMain);
 
 	std::vector<std::string>::iterator chunk = parser.splicedProgram.begin();
 
 	parser.functions.back().parse(chunk);
 	parser.text.push_back(0x1A); // exit
+	parser.text.insert(parser.text.begin(), 0x0B); // text
 
 	compile();
 

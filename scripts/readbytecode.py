@@ -1,5 +1,5 @@
 '''
-readbytecode.py - Print the bytecode in human readable format
+readbytecode.py - Print the bytecode in human readable format (disassemble)
 Copyright (C) 2020 Ethan Onstott
 
 This program is free software: you can redistribute it and/or modify

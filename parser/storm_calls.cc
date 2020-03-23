@@ -1,19 +1,19 @@
 /*
-    storm_calls.cc - parser for system call like functions
-    Copyright (C) 2020 Ethan Onstott
+	storm_calls.cc - parser for system call like functions
+	Copyright (C) 2020 Ethan Onstott
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 #include "../Storm/storm.h"
 #include "parser.h"
@@ -43,16 +43,23 @@ void addCallArgsToData(StormVMCall call, std::vector<std::string>::iterator &chu
 			declare(chunk, "");
 			arg = parser.vars.back();
 		}
-		else if ((*(chunk + 1))[0] == '[') { // function
+		else if ((*(chunk + 1))[0] == '(') { // function
 			inlineFunc(chunk, arg);
 
 			continue;
 		}
-		else // variable
-			arg = find<variable>(*chunk);
+		else { // variable
+			try {
+				arg = find<variable>(*chunk);
+			}
+			catch (NameError& e) {
+				std::cerr << e.what() << "variable " << *chunk << " not found!\n";
+				exit(EXIT_FAILURE);
+			}
+		}
 
-		// throw incorrect type error
-		if (arg.type != call.typesWanted[i]) {
+		// throw incorrect type error if not reserved (as to preserve arguments in function declarations)
+		if (arg.type != call.typesWanted[i] && arg.type != StormType::RESERVE) {
 			std::cerr << "Error: " << call.name << " expects " << (int)call.typesWanted[i] << " for argument " << i+1 << ". Got " << (int)arg.type << " instead.\n";
 			exit(EXIT_FAILURE);
 		}

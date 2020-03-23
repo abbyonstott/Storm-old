@@ -38,3 +38,5 @@ public:
 void declare(std::vector<std::string>::iterator &chunk, std::string name);
 // add literal to data
 void addLitToData(std::string literal);
+// Convert std::string to bytecode
+std::vector<uint8_t> addStringToByteCode(std::string lit);

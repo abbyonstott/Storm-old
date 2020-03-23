@@ -1,7 +1,9 @@
 # Byte Code
-### Digits are between `0x00` and `0x09`
 
-### VM instructions are reserved `0x0A` - `0x3F`
+**Digits are between `0x00` and `0x09`**
+
+**VM instructions are reserved `0x0A` - `0x3F`**
+
 Instruction  | Value
 ---------|-----------
 exec     | `0x0A`
@@ -24,12 +26,13 @@ exit     | `0x1A`
 bool     | `0x1B`
 call     | `0x1C`
 
-### Between `0x40` and `0x7E` are call numbers
+**Between `0x40` and `0x7E` are call numbers**
+
 Call    |  value
 --------|-----------
 read    | `0x40`
 write   | `0x41`
 
-### Between `0x7F` and `0xFF` is ASCII
+**Between `0x7F` and `0xFF` is ASCII**
 
-### Variables are given identifiers, specified with square brackets, that show where the id begins and ends as to not confuse it with normal bytecode
+Variables are given identifiers, specified with square brackets, that show where the id begins and ends as to not confuse it with normal bytecode

@@ -59,6 +59,7 @@ void lexer(std::string contents) {
 				splicedProgram.pop_back();
 		}
 		else if (*lttr == '\"') {
+			// things that are in quotes are not actually parsed
 			inQuotes = ((inQuotes) ? 0 : 1);
 			splicedProgram.back() += *lttr;
 		}
@@ -69,15 +70,17 @@ void lexer(std::string contents) {
 				splicedProgram.resize(splicedProgram.size() + 1);
 		}
 		else if (*lttr == '\\') {
+			// SPecial characters
 			if (inQuotes == true)
 				splicedProgram.back() += parseSpecial(lttr);
 			lttr++;
 		}
-		else if (*lttr == ',' || *lttr == '{' || *lttr == '}' || *lttr == '[' || *lttr == ']' || *lttr == '=') {
-			if (inQuotes != true)
+		else if (*lttr == ',' || *lttr == '{' || *lttr == '}' || *lttr == '(' || *lttr == ')' || *lttr == '=') {
+			// these are operators and symbols that need their own location in splicedProgram
+			if (inQuotes != true && splicedProgram.back() != "")
 				splicedProgram.resize(splicedProgram.size() + 1);
 			splicedProgram.back() += *lttr;
-			if (inQuotes != true && *(lttr + 1) != ']' && *(lttr) != ']')
+			if (inQuotes != true && *(lttr + 1) != ')' && *(lttr) != ')')
 				splicedProgram.resize(splicedProgram.size() + 1);
 		}
 		else
