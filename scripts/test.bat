@@ -14,7 +14,6 @@ if %builddir% == "none" (
 )
 
 cd ../tests
-echo "%1"
 
 
 setlocal EnableDelayedExpansion

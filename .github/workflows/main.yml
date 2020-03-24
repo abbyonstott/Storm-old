@@ -36,5 +36,7 @@ jobs:
         msbuild -m
     - name: Test
       run: |
-        cd scripts
-        ./test.bat --nofail
+        cd Windows
+        msbuild -m
+        cd ..\scripts
+        .\test.bat --nofail
