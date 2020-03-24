@@ -83,9 +83,17 @@ void lexer(std::string contents) {
 			if (inQuotes != true && *(lttr + 1) != ')' && *(lttr) != ')')
 				splicedProgram.resize(splicedProgram.size() + 1);
 		}
+		else if (*lttr == '/' && *(lttr + 1) == '/') {
+			// comment skips the line
+			while (*(lttr + 1) != '\n' && lttr + 1 != contents.end()) 
+				lttr++;
+		}
 		else
 			splicedProgram.back() += *lttr;
 	}
+
+	// this is only true for files with comments as their last lines
+	if (splicedProgram.back() == "") splicedProgram.pop_back();
 
 	parser.splicedProgram = splicedProgram;
 }
