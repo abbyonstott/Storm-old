@@ -36,28 +36,33 @@ for %%A in ("*.*") do (
 	set compiled=compiled\!orig!c
 
 	cmd /c !builddir! "-c" %%A !compiled!
-	if %errorLevel% == 1 (
-		rem failure
+	if !errorLevel! == 1 (
+		rem failure to compile
 
 		echo Test !orig! failed to compile
 		if "%1" == "--nofail" (
 			exit 1
 		)
 	)
-	if %errorLevel% == 0 set /a compilednum=!compilednum! + 1
-
-	cmd /c !builddir! !compiled!
-	if %errorLevel% == 1 (
-		rem failure
-		echo Test !orig! failed to execute
-		if "%1" == "--nofail" (
-			exit 1
+	if !errorLevel! == 0 (
+		set /a compilednum=!compilednum! + 1
+		
+		rem run
+		start cmd /c !builddir! !compiled!
+		if %errorLevel% == 1 (
+			rem failure to run
+			echo Test !orig! failed to execute
+			if "%1" == "--nofail" (
+				exit 1
+			)
+		)
+		if !errorLevel! == 0 (
+			echo Test !orig! executed successfully
+			set /a exec=!exec! + 1
 		)
 	)
-	if %errorLevel% == 0 (
-		echo Test !orig! executed successfully
-		set /a exec=!exec! + 1
-	)
+
+
 )
 
 echo !compilednum! tests compiled and !exec! tests run

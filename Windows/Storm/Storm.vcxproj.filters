@@ -28,11 +28,5 @@
     <None Include="..\..\scripts\readbytecode.py">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="..\x64\Debug\test.storm">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="..\x64\Debug\test.sasm">
-      <Filter>Source Files</Filter>
-    </None>
   </ItemGroup>
 </Project>

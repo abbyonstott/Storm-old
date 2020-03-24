@@ -113,17 +113,22 @@ int WIN32_main(int argc, char const* argv[]) {
 		return EXIT_FAILURE;
 	}
 
+	
+	
+
+	// get the exit code of the process
+	DWORD exitcode = 0;
+	
 	if (!CreateProcess(NULL,
 		(LPSTR)args.c_str(),
 		NULL,
 		NULL,
 		false,
-		0,
+		CREATE_NEW_PROCESS_GROUP,
 		NULL,
 		NULL,
 		&startinfo,
-		&processinfo)
-	)
+		&processinfo))
 	{
 		std::cerr << "Error: process failed with errno: " << GetLastError() << '\n';
 		if (GetLastError() == ERROR_FILE_NOT_FOUND) {
@@ -131,10 +136,18 @@ int WIN32_main(int argc, char const* argv[]) {
 		}
 		return EXIT_FAILURE;
 	}
-
 	WaitForSingleObject(processinfo.hProcess, INFINITE);
-	CloseHandle(processinfo.hProcess);
+	if (GetExitCodeProcess(processinfo.hProcess, &exitcode) == 0) {
+		std::cerr << "Couldn't get exit code\n";
+		return EXIT_FAILURE;
+	}
+	if (exitcode > 0) {
+		return EXIT_FAILURE;
+	}
+
 	CloseHandle(processinfo.hThread);
+	CloseHandle(processinfo.hProcess);
+	
 
 	return EXIT_SUCCESS;
 }
