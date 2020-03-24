@@ -13,13 +13,13 @@ jobs:
       run: |
         cd build
         autoreconf --install
-        ./configure
+        ./configure --enable-debug=yes
         make -j$(nproc)
 
     - name: Test
       run: |
         cd scripts
-        ./test.sh --nofail
+        ./test.sh
 
   windows:
     runs-on: windows-latest 
@@ -34,3 +34,7 @@ jobs:
       run: |
         cd Windows
         msbuild -m
+    - name: Test
+      run: |
+        cd scripts
+        .\test.bat --nofail

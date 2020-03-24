@@ -26,8 +26,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\scripts\readbytecode.py" />
-    <None Include="..\x64\Debug\test.sasm" />
-    <None Include="..\x64\Debug\test.storm" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
