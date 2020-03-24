@@ -1,0 +1,15 @@
+func one(x) {
+	x = 2;
+}
+
+func two(x) {
+	one(x);
+}
+
+func three(x) {
+	two(x);
+}
+
+one(1);
+two(2);
+three(3);

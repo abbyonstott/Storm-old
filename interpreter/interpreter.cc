@@ -27,33 +27,72 @@ HANDLE hStdout, hStdin;
 // mov value to register
 void move(std::string::iterator loc) {
 	loc++;
-	
-	// determine register
-	int reg = *loc - 0x0F;
 
-	loc++;
-	
-	// load value from next bytecode
-	switch (*loc) {
-		case 0x40: // read
-		case 0x41: // write
-			interpreter.registers[reg] = *loc;
-			loc++;
-			break;
-		case char('[' + 0x80):
-			interpreter.registers[reg] = getVal(loc);
+	// Moving value to register?
+	if (*loc >= 0x0F && *loc <= 0x13 ) {
+		// determine register
+		int reg = *loc - 0x0F;
 
-			if (interpreter.registers[reg][0] == '\"') 
-				stripString(&interpreter.registers[reg]);
-			
-			break;
+		loc++;
+		
+		// load value from next bytecode
+		switch (*loc) {
+			case 0x40: // read
+			case 0x41: // write
+				interpreter.registers[reg] = *loc;
+				loc++;
+				break;
+			case char('[' + 0x80):
+				interpreter.registers[reg] = getVal(loc);
+
+				/* 
+				 * only do this when in register, could be a security issue 
+				 * later on if unstripped strings with "[" chars are left in 
+				 * the heap.
+				*/
+				if (interpreter.registers[reg][0] == '\"') 
+					stripString(&interpreter.registers[reg]);
+				
+				break;
+		}
 	}
-	
+	// redefining
+	else if (*loc == char('[' + 0x80)) {
+		// move [lh] [rh]
+		int lh = getLoc(loc, ']');
+
+		*loc++;
+
+		std::vector<uint8_t> data;
+
+		if (*loc == char('[' + 0x80)) {
+			int rh = getLoc(loc, ']');
+			int heapIter = interpreter.heap_ptrs[rh];
+
+			while (heapIter != interpreter.heap_ptrs[rh + 1])
+				data.push_back(interpreter.heap[heapIter++]);
+		}
+		// string literal
+		else if (*loc == char('"' + 0x80)) {
+			// preserve ""
+			do {
+				data.push_back(*loc);
+				loc++;
+			} while (char(*(loc) - 0x80) != '\"');
+			data.push_back(*loc);
+		}
+		else if (*loc <= 0x09) {
+			while (*loc <= 0x09)
+				data.push_back(*(loc++));
+		}
+
+		redefVar(lh, data);
+	}
 }
 
 /*
- Run a call.
- This relies on the size of the first register being one byte.
+ * Run a call.
+ * This relies on the size of the first register being one byte.
 */
 void execute(std::string::iterator loc) {
 	// change command executed based on value of register 0 (always 1 byte)
@@ -173,7 +212,8 @@ void runScope(std::string::iterator &startloc) {
 				move(loc);
 				break;
 			case 0x1A: // exit
-				exit(0);
+				interpreter.exit_code = 0;
+				return;
 			case 0x19: // ret
 				endScope = true;
 				break;
@@ -182,6 +222,8 @@ void runScope(std::string::iterator &startloc) {
 				break;
 			case 0x1C: // call
 				callFunc(loc);
+				// if exit() was called this value will change
+				if (interpreter.exit_code >= 0) return;
 				break;
 		}
 
@@ -207,5 +249,5 @@ int main(int argc, char *argv[]) {
 	createFunctions(loc);
 	runScope(loc);
 
-	return EXIT_SUCCESS;
+	return interpreter.exit_code;
 }

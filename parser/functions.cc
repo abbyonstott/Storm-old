@@ -76,6 +76,10 @@ void create_func(std::vector<std::string>::iterator &chunk, function *funcObj) {
 
 			parser.data.push_back((uint8_t)StormType::RESERVE);
 			parser.vars.push_back(funcObj->args.back());
+
+			// add nameless reference to tempvars to avoid repetition of variable idents
+			tempVars.push_back(funcObj->args.back());
+			tempVars.back().name = "";
 		}
 
 		chunk++;
@@ -145,18 +149,32 @@ void function::run(std::vector<std::string>::iterator &chunk) {
 		std::string argName = arg.name;
 		
 		if (*chunk == ",") chunk++;
-		
+
+		parser.text.push_back(0x0E);
+		// identifier of the argument
+		for (uint8_t byte : arg.ident)
+			parser.text.push_back(byte);
+
 		if ((*chunk)[0] == '\"') {
 			// move [0], "literal"
-			parser.text.push_back(0x0E);
-
-			// identifier of the argument
-			for (uint8_t byte : arg.ident)
-				parser.text.push_back(byte);
 
 			std::vector<uint8_t> bytecodeval = addStringToByteCode(*chunk);
 			for (uint8_t byte : bytecodeval)
 				parser.text.push_back(byte);
+		}
+		else if (isInt(*chunk)) {
+			for (char c : *chunk)
+				parser.text.push_back(c - '0');
+		}
+		else {
+			try {
+				for (uint8_t byte : find<variable>(*chunk).ident)
+					parser.text.push_back(byte); 
+			}
+			catch(NameError& e) {
+				std::cerr << e.what() << "name " << *chunk << " not found\n";
+				exit(1);
+			}
 		}
 		chunk++;
 	}

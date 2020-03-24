@@ -59,7 +59,7 @@ void addCallArgsToData(StormVMCall call, std::vector<std::string>::iterator &chu
 		}
 
 		// throw incorrect type error if not reserved (as to preserve arguments in function declarations)
-		if (arg.type != call.typesWanted[i] && arg.type != StormType::RESERVE) {
+		if (arg.type != call.typesWanted[i] && arg.type != StormType::RESERVE && arg.type != StormType::SVOID) {
 			std::cerr << "Error: " << call.name << " expects " << (int)call.typesWanted[i] << " for argument " << i+1 << ". Got " << (int)arg.type << " instead.\n";
 			exit(EXIT_FAILURE);
 		}

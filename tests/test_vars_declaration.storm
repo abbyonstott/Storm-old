@@ -1,1 +1,3 @@
 x = "Hello, World!";
+y = 3;
+z = 4;

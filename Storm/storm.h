@@ -47,8 +47,8 @@ inline struct program_t {
 
 // Types and their bytecodes
 enum class StormType {
-	// for functions
-	SVOID,
+	// for functions and references to non typed arguments
+	SVOID = 0x1D,
 
 	/*
 	 * in parser:

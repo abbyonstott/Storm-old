@@ -25,6 +25,7 @@ ret      | `0x19`
 exit     | `0x1A`
 bool     | `0x1B`
 call     | `0x1C`
+void     | `0x1D`
 
 **Between `0x40` and `0x7E` are call numbers**
 

@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #!/usr/bin/env python3
 
 import sys
-from enum import Enum
+from enum import Enum, auto
 
 if (len(sys.argv) != 3):
 	print("Command format:\n")
@@ -45,15 +45,16 @@ instruct = {
 	0x1A : "exit\n",
 	0x1B : "bool",
 	0x1C : "call",
+	0x1D : "void",
 	0x40 : "read\n",
 	0x41 : "write\n"
 }
 
 class Type(Enum):
-	DIGIT = 0
-	INSTR = 1
-	CALL = 2
-	ASCII = 3
+	DIGIT = auto()
+	INSTR = auto()
+	CALL = auto()
+	ASCII = auto()
 
 def classify(byte):
 	if byte <= 0x9:
@@ -70,6 +71,8 @@ def classify(byte):
 
 
 cont = []
+# Characters that get a \n after the expression
+spec = ["pop", "void", "integer", "string", "bool"]
 
 with open(sys.argv[1], 'rb') as bytecode:
 	for code in bytecode.read():
@@ -87,14 +90,13 @@ with open(sys.argv[1], 'rb') as bytecode:
 			
 			brack = False
 			if (len(cont) > 5): #Check if writing to register
-				brack = (chr(byte - 0x80) ==']' and ("reg" in cont[-5] or cont[-5] == 'pop'))
-
-
+				brack = (chr(byte - 0x80) ==']' and ("reg" in cont[-5] or cont[-5] in spec))
+			
 			if brack or ((chr(byte - 0x80) == '"') and (cont[-2] != ' ')):
 				cont.append("\n")
-			elif (chr(byte - 0x80) == ']'):
+			elif chr(byte - 0x80) == ']':
 				cont.append(' ')
-			elif (chr(byte - 0x80) == '}'):
+			elif chr(byte - 0x80) == '}':
 				cont.append('\n')
 
 	print(''.join(cont))

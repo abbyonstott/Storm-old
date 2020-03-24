@@ -1,5 +1,5 @@
 func hello() {
-	write ("Hello, World!\n", "/dev/stdout");
+	x = 3;
 }
 
 hello();

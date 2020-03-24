@@ -46,6 +46,16 @@ std::string getVal(std::string::iterator &loc) {
 		std::cerr << "Error: tried to access unitialized variable at address " << num << '\n';
 		exit(1);
 	}
+	else if (interpreter.heap[i] == '[' + 0x80) {
+		// find the actual value. I'm sure there's a more efficient way to do this...
+		std::string raw;
+		while (i < interpreter.heap_ptrs[num + 1])
+			raw += char(interpreter.heap[i++]);
+		
+		std::string::iterator rawloc = raw.begin();
+
+		return getVal(rawloc);
+	}
 
 	while(i < interpreter.heap_ptrs[num + 1]) {
 		value += ((interpreter.heap[interpreter.heap_ptrs[num]] > 0x7f) 
@@ -61,60 +71,71 @@ std::string getVal(std::string::iterator &loc) {
 void callFunc(std::string::iterator &loc) {
 	std::string::iterator locTemp = ++loc;
 
-	loc = interpreter.contents.begin() + getLoc(loc, '}');
+	loc = interpreter.functions[getLoc(loc, '}')];
 	runScope(loc);
 
 	loc = locTemp;
 	while (char(*loc - 0x80) != '}') loc++;
 }
 
-void popStack(std::string::iterator &loc) {
-	loc++;
-	int num = getLoc(loc, ']');
-	std::string stop = interpreter.stack.top(); // value of top
-	int sval_size = stop.size();
+// redefine var in heap, and change location pointers
+void redefVar(int num, std::vector<uint8_t> data) {
+	/* 
+	 * The original size is difference between
+	 * the location of the next value and the
+	 * location of the value being changed
+	*/
 	int orig_size = interpreter.heap_ptrs[num + 1] - interpreter.heap_ptrs[num];
-	
-	interpreter.stack.pop();
 
 	// put bytecode into heap
-	for (int i = 0; i < interpreter.heap_ptrs[num + 1]; i++)
+	for (int i = interpreter.heap_ptrs[num]; i < interpreter.heap_ptrs[num + 1]; i++)
 		interpreter.heap.erase(interpreter.heap.begin() + interpreter.heap_ptrs[num]);
 
-	for (int i = 0; i < sval_size; i++) {
+	for (int i = 0; i < data.size(); i++) {
 		interpreter.heap.insert(
 			interpreter.heap.begin() + interpreter.heap_ptrs[num] + i,
-			stop[i] + 0x80
+			data.at(i)
 		);
 	}
 
 	// adjust interpreter.heap_ptrs
 	for (auto i = interpreter.heap_ptrs.begin() + num; i != interpreter.heap_ptrs.end(); i++)
-		*i += sval_size - orig_size;
+		*i += data.size() - orig_size;
 
 	interpreter.heap_ptrs[0] = 0;
 }
 
+void popStack(std::string::iterator &loc) {
+	loc++;
+	int num = getLoc(loc, ']');
+
+	// value on top of stack
+	std::vector<uint8_t> sTop;
+
+	for (char c : interpreter.stack.top())
+		sTop.push_back(c + 0x80);
+	
+	interpreter.stack.pop();
+
+	redefVar(num, sTop);
+}
+
 void createFunctions(std::string::iterator &loc) {
 	loc++;
-	int numberOfFunctions = getLoc(loc, '}') + 1;
+	interpreter.functions.resize(interpreter.functions.size() + 1);
 
-	// the first function defined is always the last in the vector
-	interpreter.functions.resize(numberOfFunctions);
-	interpreter.functions.back() = ++loc;
-
-	if (numberOfFunctions > 1) {
-		while (true) {
-			while (*loc != 0x19) loc++;
-			loc++;
-
-			int num = getLoc(loc, '}');
-			
-			interpreter.functions[num] = ++loc;
-
-			if (num == 0)
-				break;
+	while (true) {
+		int num = getLoc(loc, '}');
+		
+		if (num == 0) {
+			interpreter.functions[0] = ++loc;
+			break;
 		}
+
+		interpreter.functions.push_back(++loc);
+
+		while (*loc != 0x19) loc++;
+		loc++;
 	}
 }
 
@@ -131,12 +152,15 @@ void allocateMemory(std::string::iterator &loc) { // load data into memory
 		// not unitialized
 		if (*loc != (uint8_t)StormType::RESERVE) {
 			// variable defined to be other variable
-			if (char(*loc - 0x80) == '[') {
+			if (char(*(loc + 1) - 0x80) == '[' && *loc != (uint8_t)StormType::SVOID) {
 				loc++;
 				for (char c : getVal(loc))
 					interpreter.heap.push_back(c + 0x80);
 			}
 			else { // var defined as literal
+				if (*loc == (uint8_t)StormType::SVOID)
+					interpreter.heap.push_back(*(++loc));
+
 				do {
 					loc++;
 					interpreter.heap.push_back(*loc);
@@ -144,7 +168,7 @@ void allocateMemory(std::string::iterator &loc) { // load data into memory
 			}
 		}
 		else {
-			interpreter.heap.push_back((uint8_t)StormType::RESERVE);
+			interpreter.heap.push_back(*loc);
 		}
 
 		loc++;
