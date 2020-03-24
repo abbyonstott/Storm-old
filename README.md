@@ -20,7 +20,7 @@ Install MSVC.exe and MSBUILD.exe\
 CLI:
 ```bat
 cd Windows
-msvc .
+msbuild .
 ```
 Visual Studio:\
 Load the solution located in Windows/
