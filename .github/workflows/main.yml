@@ -18,8 +18,12 @@ jobs:
 
     - name: Test
       run: |
-        cd scripts
-        ./test.sh --nofail
+        cd build
+        autoreconf --install
+        ./configure
+        make -j$(nproc)
+        cd ../scripts
+        ./test.sh
 
   windows:
     runs-on: windows-latest 
