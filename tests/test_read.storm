@@ -1,1 +1,1 @@
-read ["/dev/null", 1];
+read ("/dev/null", 1);

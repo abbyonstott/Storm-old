@@ -1,28 +1,28 @@
 /*
-    svalues.cc - The compiler's memory management
-    Copyright (C) 2020 Ethan Onstott
+	svalues.cc - The compiler's memory management
+	Copyright (C) 2020 Ethan Onstott
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "../Storm/storm.h"
 #include "parser.h"
 
 /*
- variable class constructor
- set name
- create ident
+ * variable class constructor
+ * set name
+ * create ident
 */
 variable::variable(std::string _name) {
 	name = _name;
@@ -67,8 +67,7 @@ variable find<variable>(std::string name) {
 			return v;
 	}
 
-	std::cerr << "Error: Variable " << name << " not found.\n";
-	exit(EXIT_FAILURE);
+	throw NameError();
 }
 
 void addLitToData(std::string literal) {
@@ -101,7 +100,7 @@ void declare(std::vector<std::string>::iterator &chunk, std::string name) {
 		for (char c : *chunk)
 			parser.data.push_back(c - '0');
 	}
-	else if (*(chunk+1) == "[") { // function
+	else if (*(chunk+1) == "(") { // function
 		inlineFunc(chunk, v);
 		parser.vars.push_back(v);
 
@@ -111,8 +110,19 @@ void declare(std::vector<std::string>::iterator &chunk, std::string name) {
 	}
 	else {
 		// search for already defined variable
-		variable *match = new variable(find<variable>(*chunk));
-		v.type = match->type;
+		variable *match;
+
+		try {
+			match = new variable(find<variable>(*chunk));
+		}
+		catch (NameError& e) {
+			std::cerr << e.what() << "variable " << *chunk << " not found!\n";
+			exit(EXIT_FAILURE);
+		}
+		
+		v.type = (match->type != StormType::RESERVE) 
+			? match->type
+			: StormType::SVOID;
 		
 		parser.data.push_back((int)v.type);
 		parser.data.insert(parser.data.end(),

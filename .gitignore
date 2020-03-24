@@ -31,3 +31,5 @@ Makefile
 *.user
 x64/
 x86/
+
+.vscode
