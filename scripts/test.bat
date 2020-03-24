@@ -13,7 +13,11 @@ if %builddir% == "none" (
 	exit /B 0
 )
 
-cd ../tests
+cd ..\tests
+
+if not exist compiled (
+	mkdir compiled
+)
 
 
 setlocal EnableDelayedExpansion
