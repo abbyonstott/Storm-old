@@ -18,11 +18,7 @@ jobs:
 
     - name: Test
       run: |
-        cd build
-        autoreconf --install
-        ./configure
-        make -j$(nproc)
-        cd ../scripts
+        cd scripts
         ./test.sh --nofail
 
   windows:
@@ -40,7 +36,5 @@ jobs:
         msbuild -m
     - name: Test
       run: |
-        cd Windows
-        msbuild -m
-        cd ..\scripts
+        cd scripts
         test.bat
