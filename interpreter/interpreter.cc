@@ -121,6 +121,10 @@ void execute(std::string::iterator loc) {
 
 			DWORD totalRead;
 
+			if (filename == "/dev/null") {
+				filename = "nul";
+			}
+
 			if (filename == "/dev/stdin")
 				fileHandle = hStdin;
 			else {
@@ -171,6 +175,10 @@ void execute(std::string::iterator loc) {
 			std::string filename = interpreter.registers[2];
 			HANDLE fileHandle;
 			DWORD totalWritten;
+
+			if (filename == "/dev/null") {
+				filename = "nul";
+			}
 
 			if (filename == "/dev/stdout") {
 				fileHandle = hStdout;
