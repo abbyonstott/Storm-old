@@ -37,4 +37,4 @@ jobs:
     - name: Test
       run: |
         cd scripts
-        test.bat
+        ./test.bat
