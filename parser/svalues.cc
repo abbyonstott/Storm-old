@@ -116,7 +116,6 @@ void declare(std::vector<std::string>::iterator &chunk, std::string name) {
 			match = new variable(find<variable>(*chunk));
 		}
 		catch (NameError& e) {
-			delete match;
 			std::cerr << e.what() << "variable " << *chunk << " not found!\n";
 			exit(EXIT_FAILURE);
 		}
