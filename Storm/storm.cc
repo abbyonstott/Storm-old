@@ -113,9 +113,6 @@ int WIN32_main(int argc, char const* argv[]) {
 		return EXIT_FAILURE;
 	}
 
-	
-	
-
 	// get the exit code of the process
 	DWORD exitcode = 0;
 	
@@ -147,7 +144,7 @@ int WIN32_main(int argc, char const* argv[]) {
 
 	CloseHandle(processinfo.hThread);
 	CloseHandle(processinfo.hProcess);
-	
+
 
 	return EXIT_SUCCESS;
 }

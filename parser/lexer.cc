@@ -85,8 +85,9 @@ void lexer(std::string contents) {
 		}
 		else if (*lttr == '/' && *(lttr + 1) == '/') {
 			// comment skips the line
-			while (*(lttr + 1) != '\n' && lttr + 1 != contents.end()) 
+			do {
 				lttr++;
+			} while (lttr + 1 != contents.end() && *lttr != '\n');
 		}
 		else
 			splicedProgram.back() += *lttr;
