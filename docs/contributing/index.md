@@ -23,13 +23,13 @@ git merge upstream/master
 
 ## Building
 
-For instructions on how to build, see [building.md](/Storm/building)
+For instructions on how to build, see [building](/Storm/building)
 
 ## Making changes
 
 Before making changes to any C++ code, see [the C++ style guide](/Storm/contributing/style-cpp)
 
-If you need to reference bytecode values. The complete list of them is in [bytecode.md](/Storm/contributing/bytecode)
+If you need to reference bytecode values. The complete list of them is in [bytecode](/Storm/contributing/bytecode)
 
 Checkout a branch on your local repository.
 
