@@ -81,8 +81,8 @@ void redefVar(int num, std::vector<uint8_t> data) {
 		);
 	}
 
-	// adjust interpreter.heap_ptrs
-	for (auto i = interpreter.heap_ptrs.begin() + num; i != interpreter.heap_ptrs.end(); i++)
+	// adjust interpreter.heap_ptrs only past the one changed
+	for (auto i = interpreter.heap_ptrs.begin() + num + 1; i != interpreter.heap_ptrs.end(); i++)
 		*i += data.size() - orig_size;
 
 	interpreter.heap_ptrs[0] = 0;
@@ -115,17 +115,29 @@ void pushStack(std::string::iterator &loc) {
 
 void popStack(std::string::iterator &loc) {
 	loc++;
-	int num = getLoc(loc, ']');
+	int num;
 
-	// value on top of stack
-	std::vector<uint8_t> sTop;
+	if (char(*loc - 0x80) == '[') {
+		num = getLoc(loc, ']');
 
-	for (char c : interpreter.stack.top())
-		sTop.push_back(c + 0x80);
+		// value on top of stack in bytecode
+		std::vector<uint8_t> sTop;
+
+		for (char c : interpreter.stack.top())
+			sTop.push_back(c + 0x80);
+
+		redefVar(num, sTop);
+	}
+	else { // register
+		num = *loc - 0x0F;
+
+		interpreter.registers[num] = interpreter.stack.top();
+		// the registers never have leading and trailing quotes
+		if (interpreter.registers[num][0] == '\"')
+			stripString(&interpreter.registers[num]);
+	}
 	
-	interpreter.stack.pop();
-
-	redefVar(num, sTop);
+	interpreter.stack.pop();	
 }
 
 void createFunctions(std::string::iterator &loc) {

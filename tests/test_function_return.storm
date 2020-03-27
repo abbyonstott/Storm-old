@@ -16,4 +16,3 @@ func retNum() {
 }
 
 n = retNum(b);
-write(x, "/dev/stdout");

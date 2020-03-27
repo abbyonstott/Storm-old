@@ -114,17 +114,17 @@ void function::run(std::vector<std::string>::iterator &chunk) {
 	 *	call {1}
 	 *	exit
 	*/
-	chunk += 2; // go to first argument
+	int given = 0;
+
+	chunk += 2; // move to )
 
 	// function has arguments
-	if (*chunk != ")") {
-		int given = numArgsGiven(chunk);
-		
-		// Wrong number of arguments?
-		if (given != args.size()) {
-			std::cerr << "Function " << name << " requires " << args.size() << " arguments " << given << " given!\n";
-			exit(EXIT_FAILURE);
-		}
+	if (*chunk != ")")
+		given = numArgsGiven(chunk - 1); // starts at (
+
+	if (args.size() != given) {
+		std::cerr << "Function " << name << " requires " << args.size() << " argument(s). " << given << " given!\n";
+		exit(EXIT_FAILURE);
 	}
 
 	
@@ -155,7 +155,7 @@ void function::run(std::vector<std::string>::iterator &chunk) {
 					parser.text.push_back(byte); 
 			}
 			catch(NameError& e) {
-				std::cerr << e.what() << "name " << *chunk << " not found\n";
+				std::cerr << e.what() << "variable " << *chunk << " not found\n";
 				exit(1);
 			}
 		}
@@ -224,14 +224,14 @@ void function::returnValue(std::vector<std::string>::iterator &chunk) {
 
 // assign value to function
 void inlineFunc(std::vector<std::string>::iterator &chunk, variable &v) {
-	parser.data.push_back((uint8_t)StormType::RESERVE);
-
 	if (*chunk == "read") {
 		StormCall(chunk);
 		v.type = StormType::STRING;
 	}
-	else {
+	else { // normal function
+
 		function f;
+		// check if function exists
 		try {
 			f = find<function>(*chunk);
 		}
@@ -246,22 +246,28 @@ void inlineFunc(std::vector<std::string>::iterator &chunk, variable &v) {
 
 		v.type = f.type;
 	}
-
-	parser.text.push_back(0x18); // pop
-	parser.text.insert(parser.text.end(),
-		v.ident.begin(), v.ident.end());
 }
 
-// evaluate number of args given from function
+/*
+ * evaluate number of args given from function
+ * starts at the (
+*/
 int numArgsGiven(std::vector<std::string>::iterator chunk) {
-	int arg = 1;
-	bool inquotes = 0;
+	int arg = 1, inlines = 0;
+
+	chunk++; // get past ( to allow inlines to be properly captured
 
 	do {	
-		if (*(chunk) == "," && inquotes == 0)
+		if (*(chunk) == "," && inlines == 0)
 			arg++;
+		else if (*chunk == "(")
+			inlines++;
 
 		chunk++;
+		if (*chunk == ")" && inlines != 0) {// inline
+			inlines--;
+			chunk++;
+		}
 	} while (*chunk != ")");
 
 	return arg;

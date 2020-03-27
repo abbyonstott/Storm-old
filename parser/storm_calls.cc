@@ -10,6 +10,11 @@ StormVMCall determineCall(std::string kw) {
 
 void addCallArgsToData(StormVMCall call, std::vector<std::string>::iterator &chunk) {
 	size_t numargs = call.typesWanted.size();
+	std::vector<uint8_t> newText = {
+		0x0E, // mov
+		0x0F, // reg0
+		call.byte 
+	}; // what will be added to parser.text
 
 	// Determine if call gives correct number of args
 	if (numArgsGiven(chunk) != numargs) {
@@ -17,6 +22,7 @@ void addCallArgsToData(StormVMCall call, std::vector<std::string>::iterator &chu
 		std::cerr << "Compilation error: " << call.name << " requires " << numargs << " arguments\n";
 		exit(EXIT_FAILURE);
 	}
+
 	chunk++;
 	for (int i = 0; i < numargs; i++, chunk++) {
 		variable arg;
@@ -26,9 +32,16 @@ void addCallArgsToData(StormVMCall call, std::vector<std::string>::iterator &chu
 			declare(chunk, "");
 			arg = parser.vars.back();
 		}
-		else if ((*(chunk + 1))[0] == '(') { // function
+		else if ((*(chunk + 1)) == "(") { // function
 			inlineFunc(chunk, arg);
-
+			// pop regn
+			newText.push_back(0x18);
+			newText.push_back(0x10 + i);
+			/* 
+			 * don't do the move thing that the others do because 
+			 * no memory will be used here apart from variables 
+			 * declared from inside the function
+			*/
 			continue;
 		}
 		else { // variable
@@ -47,24 +60,23 @@ void addCallArgsToData(StormVMCall call, std::vector<std::string>::iterator &chu
 			exit(EXIT_FAILURE);
 		}
 
-		parser.text.push_back(0x0E);
-		parser.text.push_back(0x10 + i);
-		parser.text.insert(parser.text.end(), arg.ident.begin(), arg.ident.end());
+		newText.push_back(0x0E);
+		newText.push_back(0x10 + i);
+		newText.insert(newText.end(), arg.ident.begin(), arg.ident.end());
 
 		// get through comma
 		chunk++;
 	}
+	for (uint8_t byte : newText) 
+		parser.text.push_back(byte);
+
 	parser.text.push_back(0x0A); // execute
 }
 
 void StormCall(std::vector<std::string>::iterator &chunk) {
 	StormVMCall call = determineCall(*chunk);
-	parser.text.push_back(0x0E); // move
-	parser.text.push_back(0x0F); // reg0
-
-	parser.text.push_back(call.byte); // byte value of call
-
 	chunk++;
+	// call will be added in this function
 	addCallArgsToData(call, chunk);
-	while (*chunk != ";") chunk++;
+	while (*chunk != ";" && *chunk != ",") chunk++;
 }
