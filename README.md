@@ -2,7 +2,7 @@
 
 Storm is a general-purpose programming language.
 
-For new contributors, read [docs/contributing.md](docs/contributing/contributing.md)
+For contributors, read [docs/contributing.md](docs/contributing/contributing.md)
 
 ## Build Instructions
 
