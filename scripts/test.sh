@@ -45,7 +45,9 @@ for i in $( ls ../tests | grep .storm ); do
 	total=$((total + 1))
 done
 
-echo $executed successful out of $compiled compiled. $'\n'$total total tests
+echo $executed executed
+echo $compiled compiled
+echo $total total
 
 # print errors if failed to compile
 if [ $executed -ne $total ] || [ $compiled -ne $total ]; then

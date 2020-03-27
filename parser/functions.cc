@@ -114,53 +114,82 @@ void function::run(std::vector<std::string>::iterator &chunk) {
 	 *	call {1}
 	 *	exit
 	*/
-	chunk += 2; // go to first argument
+	int given = 0;
+
+	chunk += 2; // move to )
 
 	// function has arguments
-	if (*chunk != ")") {
-		int given = numArgsGiven(chunk);
-		
-		// Wrong number of arguments?
-		if (given != args.size()) {
-			std::cerr << "Function " << name << " requires " << args.size() << " arguments " << given << " given!\n";
-			exit(EXIT_FAILURE);
-		}
+	if (*chunk != ")")
+		given = numArgsGiven(chunk - 1); // starts at (
+
+	if (args.size() != given) {
+		std::cerr << "Function " << name << " requires " << args.size() << " argument(s). " << given << " given!\n";
+		exit(EXIT_FAILURE);
 	}
 
-	
+	/* 
+	 * adding to vector is delayed due to inline 
+	 * functions with return values also having their 
+	 * own output
+	*/
+	std::vector<uint8_t> newText;
+
 	for (variable& arg : args) {
 		std::string argName = arg.name;
-		
+
 		if (*chunk == ",") chunk++;
 
-		parser.text.push_back(0x0E);
-		// identifier of the argument
-		for (uint8_t byte : arg.ident)
-			parser.text.push_back(byte);
-
 		if ((*chunk)[0] == '\"') {
-			// move [0], "literal"
+			newText.push_back(0x0E);
+			for (uint8_t byte : arg.ident)
+				newText.push_back(byte);
 
+			// move [0], "literal"
 			std::vector<uint8_t> bytecodeval = addStringToByteCode(*chunk);
 			for (uint8_t byte : bytecodeval)
-				parser.text.push_back(byte);
+				newText.push_back(byte);
 		}
 		else if (isInt(*chunk)) {
+			newText.push_back(0x0E);
+			for (uint8_t byte : arg.ident)
+				newText.push_back(byte);
+
 			for (char c : *chunk)
-				parser.text.push_back(c - '0');
+				newText.push_back(c - '0');
+		}
+		else if (*(chunk + 1) == "(") {
+			// inline function
+			variable v;
+			inlineFunc(chunk, v);
+			chunk++;
+		
+			newText.push_back(0x18); // pop
+			// the identifier of the argument
+			for (uint8_t byte : arg.ident)
+				newText.push_back(byte);
+			continue;
 		}
 		else {
 			try {
+				newText.push_back(0x0E);
+				// the identifier of the argument
+				for (uint8_t byte : arg.ident)
+					newText.push_back(byte);
+
 				for (uint8_t byte : find<variable>(*chunk).ident)
-					parser.text.push_back(byte); 
+					newText.push_back(byte); 
 			}
 			catch(NameError& e) {
-				std::cerr << e.what() << "name " << *chunk << " not found\n";
+				std::cerr << e.what() << "variable " << *chunk << " not found\n";
 				exit(1);
 			}
 		}
 		chunk++;
 	}
+
+	// add newtext to parser.text
+	for (uint8_t byte: newText)
+		parser.text.push_back(byte);
 
 	parser.text.push_back(0x1C); // call
 	
@@ -168,46 +197,112 @@ void function::run(std::vector<std::string>::iterator &chunk) {
 		parser.text.push_back(byte);
 }
 
-// run function that is inside of value
-void inlineFunc(std::vector<std::string>::iterator &chunk, variable &v) {
-	parser.data.push_back((uint8_t)StormType::RESERVE);
+void function::returnValue(std::vector<std::string>::iterator &chunk) {
+	// main has no return value
+	if (name == "main") {
+		std::cerr << "Error: no returns in main scope";
+		exit(EXIT_FAILURE);
+	}
 
-	// calls are handled differently than functions
-	if (*chunk == "read") {
-		/*
-		 * running read and storing value in var:
-		 *
-		 * data
-		 * 	[0] res
-		 * 	[1] string "/dev/stdin"
-		 * 	[2] integer 1
- 		 * 
-		 * text
-		 * 	move reg0, 0x40 ; read
-		 * 	move reg1, [1]  ; filename
-		 * 	move reg2, [2] ; buffer size (1 in this case)
-		 * 	exec ; move value of file in reg1 to reg3
-		 * 	pop [0] ; take value and put into buffer
-		*/
-		StormCall(chunk);
-		parser.text.push_back(0x18); // pop
-		parser.text.insert(parser.text.end(),
-			v.ident.begin(), v.ident.end());
-		v.type = StormType::STRING;
+	StormType retType;
+
+	try {
+		variable rVal = find<variable>(*(++chunk));
+		
+		retType = rVal.type;
+
+		parser.text.push_back(0x17);
+		// ident if var
+		for (uint8_t byte : rVal.ident)
+			parser.text.push_back(byte);
+	}
+	catch (NameError &n) {
+		// literal (or function)
+		if ((*chunk)[0] == '\"') {
+			parser.text.push_back(0x17);
+			for (uint8_t byte : addStringToByteCode(*chunk))
+				parser.text.push_back(byte);
+
+			retType = StormType::STRING;
+		}
+		else if (isInt(*chunk)) { // int literal
+			parser.text.push_back(0x17);
+			for (char c : *chunk)
+				parser.text.push_back(c - '0');
+
+			retType = StormType::INTEGER;
+		}
+		else if (*(chunk + 1) == "(") { // inline func
+			variable rVal;
+			// if it has a return type push value
+			inlineFunc(chunk, rVal);
+			chunk++;
+			
+			if (rVal.type == StormType::SVOID) {
+				// Error out if function is void
+				std::cerr << "Error: Function in return of " << name << " cannot be void!\n";
+				exit(1);
+			}
+
+			retType = rVal.type;
+		}
+		else {
+			std::cerr << n.what() << *chunk << " is not a recognized identifier.\n";
+			exit(1);	
+		}
+	}
+
+	// if not first time, make sure the types are the same.
+	if (type == StormType::SVOID)
+		type = retType;
+	else if (type != retType) {
+		std::cerr << "Error: wrong return type in " << name << '\n';
+		exit(1);
 	}
 }
 
-// evaluate number of args given from function
+// assign value to function
+void inlineFunc(std::vector<std::string>::iterator &chunk, variable &v) {
+	if (*chunk == "read") {
+		StormCall(chunk);
+		v.type = StormType::STRING;
+		chunk--; // subtract one to stay at the same location as the normal functions do.
+	}
+	else { // normal function
+
+		function f;
+		// check if function exists
+		try {
+			f = find<function>(*chunk);
+		}
+		catch(NameError &n) {
+			std::cerr << n.what() << "function " << *chunk << " not found.\n";
+			exit(1);
+		}
+		
+		f.run(chunk);
+
+		v.type = f.type;
+	}
+}
+
+/*
+ * evaluate number of args given from function
+ * starts at the (
+*/
 int numArgsGiven(std::vector<std::string>::iterator chunk) {
-	int arg = 1;
-	bool inquotes = 0;
+	int arg = 1, inlines = 0;
 
+	chunk++; // get past ( to allow inlines to be properly captured
 	do {	
-		if (*(chunk) == "," && inquotes == 0)
+		if (*(chunk) == "," && inlines == 0)
 			arg++;
-
+		else if (*chunk == "(")
+			inlines++;
+		else if (*chunk == ")" && inlines != 0)// inline
+			inlines--;
 		chunk++;
-	} while (*chunk != ")");
+	} while (*chunk != ")" || inlines != 0);
 
 	return arg;
 }

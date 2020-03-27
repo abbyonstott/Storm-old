@@ -3,9 +3,9 @@
 import sys
 from enum import Enum, auto
 
-if (len(sys.argv) != 3):
+if (len(sys.argv) < 2):
 	print("Command format:\n")
-	print("python readbytecode.py <input_file> <output_file>")
+	print("python readbytecode.py <input_file> [output_file]")
 
 # Dictionary of bytecode instructions
 instruct = {
@@ -55,7 +55,7 @@ def classify(byte):
 
 cont = []
 # Characters that get a \n after the expression
-spec = ["pop", "void", "integer", "string", "bool"]
+spec = ["push", "pop", "void", "integer", "string", "bool"]
 
 with open(sys.argv[1], 'rb') as bytecode:
 	for code in bytecode.read():
@@ -84,7 +84,8 @@ with open(sys.argv[1], 'rb') as bytecode:
 
 	print(''.join(cont))
 
-with open(sys.argv[2], 'w') as outfile:
-	outfile.write(''.join(cont))
+if len(sys.argv) == 3:
+	with open(sys.argv[2], 'w') as outfile:
+		outfile.write(''.join(cont))
 
-print("Written to file \"{0}\"".format(sys.argv[2]))
+	print("Written to file \"{0}\"".format(sys.argv[2]))

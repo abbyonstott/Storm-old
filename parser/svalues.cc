@@ -83,7 +83,14 @@ void declare(std::vector<std::string>::iterator &chunk, std::string name) {
 			parser.data.push_back(c - '0');
 	}
 	else if (*(chunk+1) == "(") { // function
+		// assigned later
+		parser.data.push_back((uint8_t)StormType::RESERVE);
 		inlineFunc(chunk, v);
+		// pop into variable
+		parser.text.push_back(0x18);
+		parser.text.insert(parser.text.end(),
+			v.ident.begin(), v.ident.end());
+
 		parser.vars.push_back(v);
 
 		while (*chunk != ";") chunk++;

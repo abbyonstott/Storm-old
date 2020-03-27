@@ -1,6 +1,9 @@
 #pragma once
 
 class function {
+private:
+	// return
+	void returnValue(std::vector<std::string>::iterator &chunk);
 public:
 	std::vector<uint8_t> ident;
 	std::string name;
@@ -15,7 +18,7 @@ public:
 	
 	/*
 	 * The function's text size + the offset of the last one
-	 * or the sum off all text sizes for each function
+	 * or the sum of all text sizes for each function
 	 * 
 	 * If this is the first defined, parser.functions[parser.functions.size() - 2].offset
 	 * is 0

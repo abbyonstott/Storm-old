@@ -20,7 +20,20 @@ void function::parse(std::vector<std::string>::iterator &chunk) {
 		else if ((chunk != parser.splicedProgram.end()) && (*(chunk + 1) == "=")) {
 			declare(chunk, *chunk);
 		}
+		else if (*chunk == "return") {
+
+			returnValue(chunk);
+			parser.text.push_back(0x19);
+
+			while (*chunk != ";") chunk++;
+			chunk++;
+			break;
+		}
 		else if (*chunk == "}") {
+			if (name == "main") {
+				std::cerr << "Error: mismatched } in main scope";
+				exit(EXIT_FAILURE);
+			}
 			// exit scope
 			parser.text.push_back(0x19); // ret
 			break;
@@ -37,8 +50,7 @@ void function::parse(std::vector<std::string>::iterator &chunk) {
 			}
 
 			f->run(chunk);
-
-			while (*chunk != ";") { chunk++; }
+			chunk++;
 		}
 		else {
 			std::cerr << NameError().what() << *chunk << " is not a recognized keyword or defined value.\n";

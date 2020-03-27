@@ -1,0 +1,17 @@
+func inlineStr() {
+	return "Value";
+}
+
+func inlineArg(x) {
+	return x;
+}
+
+func inlineNum() {
+	return 3;
+}
+// nesting
+inlineArg(inlineArg(inlineNum()));
+
+// number
+inlineArg(inlineNum());
+x = inlineArg(inlineStr());

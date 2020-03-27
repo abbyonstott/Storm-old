@@ -1,0 +1,15 @@
+// location used through variable
+loc = "/dev/null";
+x = read(loc, 1);
+write(x, loc);
+
+// through arguments
+// using null to prevent output
+write(read(loc, 1), loc);
+
+// run regular function inline in call
+func test() {
+	return "pizza\n";
+}
+
+write(test(), "/dev/null");

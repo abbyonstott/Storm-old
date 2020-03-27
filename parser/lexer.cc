@@ -48,7 +48,7 @@ void lexer(std::string contents) {
 		else if (*lttr == ' ') {
 			if (inQuotes == true)
 				splicedProgram.back() += *lttr;
-			else if (splicedProgram.back() == "func")
+			else if (splicedProgram.back() == "func" || splicedProgram.back() == "return")
 				splicedProgram.resize(splicedProgram.size() + 1);
 		}
 		else if (*lttr == '\\') {

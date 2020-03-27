@@ -207,6 +207,9 @@ void runScope(std::string::iterator &startloc) {
 			case 0x19: // ret
 				endScope = true;
 				break;
+			case 0x17: // push
+				pushStack(loc);
+				break;
 			case 0x18: // pop
 				popStack(loc);
 				break;
