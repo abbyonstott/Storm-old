@@ -136,8 +136,7 @@ void function::run(std::vector<std::string>::iterator &chunk) {
 
 	for (variable& arg : args) {
 		std::string argName = arg.name;
-		
-		
+
 		if (*chunk == ",") chunk++;
 
 		if ((*chunk)[0] == '\"') {
