@@ -1,0 +1,19 @@
+func retString() {
+	return "hello\n";
+}
+
+x = retString();
+
+func retVal(value) {
+	value = 3;
+	return value;	
+}
+
+b = retVal(2);
+
+func retNum() {
+	return 3;
+}
+
+n = retNum(b);
+write(x, "/dev/stdout");

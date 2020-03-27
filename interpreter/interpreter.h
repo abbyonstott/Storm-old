@@ -22,8 +22,8 @@ std::string getVal(std::string::iterator &loc);
 void runScope(std::string::iterator &startloc);
 int getLoc(std::string::iterator &loc, char endtoken);
 void redefVar(int num, std::vector<uint8_t> data);
-
 void allocateMemory(std::string::iterator &loc);
 void createFunctions(std::string::iterator &loc);
+void pushStack(std::string::iterator &loc);
 void popStack(std::string::iterator &loc);
 void callFunc(std::string::iterator &loc);

@@ -168,33 +168,88 @@ void function::run(std::vector<std::string>::iterator &chunk) {
 		parser.text.push_back(byte);
 }
 
-// run function that is inside of value
+void function::returnValue(std::vector<std::string>::iterator &chunk) {
+	/*
+	* return [val] is read as
+	* push [val]
+	* ret
+	* 
+	* in caller:
+	* rh = lh()
+	* read as: 
+	* pop [rh]
+	*/
+
+	// main has no return value
+	if (name == "main") {
+		std::cerr << "Error: no returns in main scope";
+		exit(EXIT_FAILURE);
+	}
+	parser.text.push_back(0x17);
+
+	try {
+		variable rVal = find<variable>(*(++chunk));
+		
+		// if not first time, make sure the types are the same.
+		if (type == StormType::SVOID)
+			type = rVal.type;
+		else if (type != rVal.type) {
+			std::cerr << "Error: wrong return type in " << name << '\n';
+			exit(1);
+		}
+
+		// ident if var
+		for (uint8_t byte : rVal.ident)
+			parser.text.push_back(byte);
+	}
+	catch(NameError &n) {
+		// literal (or function)
+		if ((*chunk)[0] == '\"') {
+			for (uint8_t byte : addStringToByteCode(*chunk))
+				parser.text.push_back(byte);
+			type = StormType::STRING;
+		}
+		else if (isInt(*chunk)) {
+			for (char c : *chunk)
+				parser.text.push_back(c - '0');
+			type = StormType::INTEGER;
+		}
+		else {
+			std::cerr << n.what() << *chunk << " is not a recognized identifier.\n";
+			exit(1);	
+		}
+	}
+
+}
+
+// assign value to function
 void inlineFunc(std::vector<std::string>::iterator &chunk, variable &v) {
 	parser.data.push_back((uint8_t)StormType::RESERVE);
 
-	// calls are handled differently than functions
 	if (*chunk == "read") {
-		/*
-		 * running read and storing value in var:
-		 *
-		 * data
-		 * 	[0] res
-		 * 	[1] string "/dev/stdin"
-		 * 	[2] integer 1
- 		 * 
-		 * text
-		 * 	move reg0, 0x40 ; read
-		 * 	move reg1, [1]  ; filename
-		 * 	move reg2, [2] ; buffer size (1 in this case)
-		 * 	exec ; move value of file in reg1 to reg3
-		 * 	pop [0] ; take value and put into buffer
-		*/
 		StormCall(chunk);
-		parser.text.push_back(0x18); // pop
-		parser.text.insert(parser.text.end(),
-			v.ident.begin(), v.ident.end());
 		v.type = StormType::STRING;
 	}
+	else {
+		function f;
+		try {
+			f = find<function>(*chunk);
+		}
+		catch(NameError &n) {
+			std::cerr << n.what() << "function " << *chunk << " not found.\n";
+			exit(1);
+		}
+		
+		parser.text.push_back(0x1C); // call 
+		for (uint8_t byte : f.ident)
+			parser.text.push_back(byte); // {ident}
+
+		v.type = f.type;
+	}
+
+	parser.text.push_back(0x18); // pop
+	parser.text.insert(parser.text.end(),
+		v.ident.begin(), v.ident.end());
 }
 
 // evaluate number of args given from function

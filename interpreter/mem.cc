@@ -88,6 +88,31 @@ void redefVar(int num, std::vector<uint8_t> data) {
 	interpreter.heap_ptrs[0] = 0;
 }
 
+void pushStack(std::string::iterator &loc) {
+	
+	
+	std::string data = "";
+
+	if (char(*(loc + 1) - 0x80) == '\"') {
+		loc++;
+
+		do {
+			data += char(*(loc++) - 0x80);
+		} while (char(*loc - 0x80) != '\"');
+		
+		data += char(*loc - 0x80);
+	}
+	else if (*(loc + 1) <= 0x09) {
+		do {
+			data += '0' + *(++loc);
+		} while (*(loc + 1) <= 0x09);
+	}
+	else
+		data = getVal(loc);
+
+	interpreter.stack.push(data);
+}
+
 void popStack(std::string::iterator &loc) {
 	loc++;
 	int num = getLoc(loc, ']');
