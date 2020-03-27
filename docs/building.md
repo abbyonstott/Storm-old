@@ -2,7 +2,7 @@
 
 ## Targets
 
-Targets and their files are listed in [build/Makefile.am](/build/Makefile.am).
+Targets and their files are listed in the Makefile.am file
 
 ## Debugging
 
