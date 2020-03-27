@@ -1,6 +1,6 @@
 # The Storm Documentation
 
-Contributors should see [the contributor docs.](/Storm/contributing)
+Contributors should see [the contributor docs.](/contributing)
 
 ## User Docs
 - [Building](/building)
