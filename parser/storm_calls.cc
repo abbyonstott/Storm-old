@@ -34,6 +34,7 @@ void addCallArgsToData(StormVMCall call, std::vector<std::string>::iterator &chu
 		}
 		else if ((*(chunk + 1)) == "(") { // function
 			inlineFunc(chunk, arg);
+			chunk++;
 			// pop regn
 			newText.push_back(0x18);
 			newText.push_back(0x10 + i);
@@ -78,5 +79,4 @@ void StormCall(std::vector<std::string>::iterator &chunk) {
 	chunk++;
 	// call will be added in this function
 	addCallArgsToData(call, chunk);
-	while (*chunk != ";" && *chunk != ",") chunk++;
 }

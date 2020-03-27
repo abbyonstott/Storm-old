@@ -50,8 +50,7 @@ void function::parse(std::vector<std::string>::iterator &chunk) {
 			}
 
 			f->run(chunk);
-
-			while (*chunk != ";") { chunk++; }
+			chunk++;
 		}
 		else {
 			std::cerr << NameError().what() << *chunk << " is not a recognized keyword or defined value.\n";

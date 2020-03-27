@@ -10,8 +10,8 @@ func inlineNum() {
 	return 3;
 }
 // nesting
-inlineArg(inlineArg(inlineNum(3)));
+inlineArg(inlineArg(inlineNum()));
 
 // number
 inlineArg(inlineNum());
-inlineArg(inlineStr());
+x = inlineArg(inlineStr());

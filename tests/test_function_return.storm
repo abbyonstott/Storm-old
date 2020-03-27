@@ -15,4 +15,4 @@ func retNum() {
 	return 3;
 }
 
-n = retNum(b);
+n = retNum();

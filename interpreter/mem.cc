@@ -93,7 +93,7 @@ void pushStack(std::string::iterator &loc) {
 	
 	std::string data = "";
 
-	if (char(*(loc + 1) - 0x80) == '\"') {
+	if (char(*(loc + 1) - 0x80) == '\"') { // push string literal
 		loc++;
 
 		do {
@@ -102,13 +102,13 @@ void pushStack(std::string::iterator &loc) {
 		
 		data += char(*loc - 0x80);
 	}
-	else if (*(loc + 1) <= 0x09) {
+	else if ((uint8_t)*(loc + 1) <= 0x09) { // push int literal
 		do {
 			data += '0' + *(++loc);
 		} while (*(loc + 1) <= 0x09);
 	}
-	else
-		data = getVal(loc);
+	else // push var
+		data = getVal(++loc);
 
 	interpreter.stack.push(data);
 }
