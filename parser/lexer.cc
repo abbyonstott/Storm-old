@@ -1,5 +1,6 @@
 #include "../Storm/storm.h"
 #include "parser.h"
+#include "../file/file.h"
 #include <regex>
 
 char parseSpecial(std::string::iterator lttr) {
@@ -35,6 +36,32 @@ void lexer(std::string contents) {
 			if (lttr + 1 != contents.end())
 				splicedProgram.resize(splicedProgram.size() + 1);
 		}
+		else if (splicedProgram.back() == "import") {
+			// imports are evaluated here and inserted at this *lttr in the program
+			splicedProgram.pop_back(); // remove import keyword
+			std::string importName;
+
+			while (*lttr != ';') {
+				if (isalnum(*lttr) || *lttr == '_')
+					importName += *lttr;
+				lttr++;
+			}
+			if (importName.size() == 0) {
+				std::cerr << "Error: import used but no file specified.\n";
+				exit(1);
+			}
+
+			std::string fileContents = readFile(program.filepath + importName + ".storm");
+			
+			// a bit of a hack, but it works
+			lexer(fileContents);
+			splicedProgram.insert(splicedProgram.end(), 
+				parser.splicedProgram.begin(), 
+				parser.splicedProgram.end());
+
+			parser.splicedProgram = {}; // reset after adding
+			splicedProgram.resize(splicedProgram.size() + 1);
+		}
 		else if (*lttr == '\n' || *lttr == '\t') {
 			// remove last empty line
 			if (lttr == contents.end()-1)
@@ -48,8 +75,12 @@ void lexer(std::string contents) {
 		else if (*lttr == ' ') {
 			if (inQuotes == true)
 				splicedProgram.back() += *lttr;
-			else if (splicedProgram.back() == "func" || splicedProgram.back() == "return")
+			// spaces should add a new "chunk" for these symbols
+			else if (splicedProgram.back() == "func"
+				|| splicedProgram.back() == "return")
+			{
 				splicedProgram.resize(splicedProgram.size() + 1);
+			}
 		}
 		else if (*lttr == '\\') {
 			// SPecial characters

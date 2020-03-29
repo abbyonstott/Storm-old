@@ -16,6 +16,7 @@ git clone https://github.com/your-name/Storm
 ```
 
 To sync your local repo with master, run
+
 ```console
 git fetch upstream
 git merge upstream/master
@@ -48,6 +49,8 @@ cd scripts
 cd scripts
 .\test.bat
 ```
+
+If needed, add a related developer docs or user docs entry for the feature.
 
 **Make sure that all of the tests pass.**
 

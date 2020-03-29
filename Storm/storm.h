@@ -25,6 +25,8 @@
 
 inline struct program_t {
 	std::string filename;
+	// does not include filename
+	std::string filepath;
 } program;
 
 

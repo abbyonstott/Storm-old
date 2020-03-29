@@ -235,7 +235,7 @@ int main(int argc, char *argv[]) {
 #endif // _WIN32
 	
 	program.filename = argv[1];
-	interpreter.contents = readFile();
+	interpreter.contents = readFile(program.filename);
 	std::string::iterator loc = interpreter.contents.begin();
 
 	allocateMemory(loc);

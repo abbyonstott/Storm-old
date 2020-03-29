@@ -3,6 +3,8 @@
 
 #include "../file/file.h"
 
+#include <iterator>
+
 void function::parse(std::vector<std::string>::iterator &chunk) {
 	std::vector<variable> parentScope = parser.vars;
 
@@ -17,9 +19,6 @@ void function::parse(std::vector<std::string>::iterator &chunk) {
 
 			create_func(chunk,  &parser.functions.back());
 		}
-		else if ((chunk != parser.splicedProgram.end()) && (*(chunk + 1) == "=")) {
-			declare(chunk, *chunk);
-		}
 		else if (*chunk == "return") {
 
 			returnValue(chunk);
@@ -28,6 +27,9 @@ void function::parse(std::vector<std::string>::iterator &chunk) {
 			while (*chunk != ";") chunk++;
 			chunk++;
 			break;
+		}
+		else if ((chunk != parser.splicedProgram.end()) && (*(chunk + 1) == "=")) {
+			declare(chunk, *chunk);
 		}
 		else if (*chunk == "}") {
 			if (name == "main") {
@@ -92,8 +94,18 @@ int main(int argc, char const *argv[]) {
 	}
 
 	program.filename = std::string(argv[1]);
+	int filenamesize = 0;
+
+	// get size of filename without path
+	for (std::string::reverse_iterator fileNameIter = program.filename.rbegin(); 
+		*fileNameIter != '/'; 
+		fileNameIter++, filenamesize++);
+
+	program.filepath = program.filename.substr(0, program.filename.size() - filenamesize);
+
+
 	parser.outfile = std::string(argv[2]);
-	lexer(readFile());
+	lexer(readFile(program.filename));
 
 	function StormMain("main");
 

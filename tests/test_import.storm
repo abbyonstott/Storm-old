@@ -1,0 +1,4 @@
+// should append the file here
+import test_vars_set;
+// x = "Hello, World";
+write(x, "/dev/null");

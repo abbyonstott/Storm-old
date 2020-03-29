@@ -1,14 +1,14 @@
 #include "../Storm/storm.h"
 #include "file.h"
 
-std::string readFile() {
+std::string readFile(std::string filename) {
 	std::ifstream file;
 	std::string contents;
 
-	file.open(program.filename);
+	file.open(filename);
 
 	if (file.fail()) {
-		std::cerr << "Error: Failed to open file " << program.filename << '\n';
+		std::cerr << "Error: Failed to open file " << filename << '\n';
 		exit(EXIT_FAILURE);
 	}
 	
