@@ -23,9 +23,10 @@ stormcompiler_SOURCES = \
 	../Storm/util.cc \
 	../file/read.cc
 
-stormrun_CFLAGS = $(AM_CXXFLAGS)
+stormrun_CXXFLAGS = $(AM_CXXFLAGS)
 stormrun_SOURCES = \
 	../interpreter/interpreter.cc \
 	../interpreter/mem.cc \
+	../interpreter/arithmetic.cc \
 	../Storm/util.cc \
 	../file/read.cc

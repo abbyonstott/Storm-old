@@ -139,25 +139,7 @@ void function::run(std::vector<std::string>::iterator &chunk) {
 
 		if (*chunk == ",") chunk++;
 
-		if ((*chunk)[0] == '\"') {
-			newText.push_back(0x0E);
-			for (uint8_t byte : arg.ident)
-				newText.push_back(byte);
-
-			// move [0], "literal"
-			std::vector<uint8_t> bytecodeval = addStringToByteCode(*chunk);
-			for (uint8_t byte : bytecodeval)
-				newText.push_back(byte);
-		}
-		else if (isInt(*chunk)) {
-			newText.push_back(0x0E);
-			for (uint8_t byte : arg.ident)
-				newText.push_back(byte);
-
-			for (char c : *chunk)
-				newText.push_back(c - '0');
-		}
-		else if (*(chunk + 1) == "(") {
+		if (*(chunk + 1) == "(") {
 			// inline function
 			variable v;
 			inlineFunc(chunk, v);
@@ -170,20 +152,16 @@ void function::run(std::vector<std::string>::iterator &chunk) {
 			continue;
 		}
 		else {
-			try {
-				newText.push_back(0x0E);
-				// the identifier of the argument
-				for (uint8_t byte : arg.ident)
-					newText.push_back(byte);
+			newText.push_back(0x0E);
+			
+			for (uint8_t byte : arg.ident)
+				newText.push_back(byte);
 
-				for (uint8_t byte : find<variable>(*chunk).ident)
-					newText.push_back(byte); 
-			}
-			catch(NameError& e) {
-				std::cerr << e.what() << "variable " << *chunk << " not found\n";
-				exit(1);
-			}
+			std::vector<uint8_t> rawVal = getRawValue(chunk);
+
+			newText.insert(newText.end(), rawVal.begin(), rawVal.end());
 		}
+
 		chunk++;
 	}
 
@@ -206,50 +184,34 @@ void function::returnValue(std::vector<std::string>::iterator &chunk) {
 
 	StormType retType;
 
-	try {
-		variable rVal = find<variable>(*(++chunk));
+	chunk++;
+	if (*(chunk + 1) == "(") { // inline func
+		variable rVal;
+		// if it has a return type push value
+		inlineFunc(chunk, rVal);
+		chunk++;
 		
+		if (rVal.type == StormType::SVOID) {
+			// Error out if function is void
+			std::cerr << "Error: Function in return of " << name << " cannot be void!\n";
+			exit(1);
+		}
+
 		retType = rVal.type;
-
-		parser.text.push_back(0x17);
-		// ident if var
-		for (uint8_t byte : rVal.ident)
-			parser.text.push_back(byte);
 	}
-	catch (NameError &n) {
-		// literal (or function)
-		if ((*chunk)[0] == '\"') {
-			parser.text.push_back(0x17);
-			for (uint8_t byte : addStringToByteCode(*chunk))
-				parser.text.push_back(byte);
-
+	else {
+		parser.text.push_back(0x17);
+		std::vector<uint8_t> rawVal = getRawValue(chunk);
+		parser.text.insert(parser.text.end(), rawVal.begin(), rawVal.end());
+		
+		if ((*chunk)[0] == '\"')
 			retType = StormType::STRING;
-		}
-		else if (isInt(*chunk)) { // int literal
-			parser.text.push_back(0x17);
-			for (char c : *chunk)
-				parser.text.push_back(c - '0');
-
+		else if (isInt(*chunk))
 			retType = StormType::INTEGER;
-		}
-		else if (*(chunk + 1) == "(") { // inline func
-			variable rVal;
-			// if it has a return type push value
-			inlineFunc(chunk, rVal);
-			chunk++;
-			
-			if (rVal.type == StormType::SVOID) {
-				// Error out if function is void
-				std::cerr << "Error: Function in return of " << name << " cannot be void!\n";
-				exit(1);
-			}
-
-			retType = rVal.type;
-		}
-		else {
-			std::cerr << n.what() << *chunk << " is not a recognized identifier.\n";
-			exit(1);	
-		}
+		else if (*chunk == "true" || *chunk == "false")
+			retType = StormType::BOOL;
+		else
+			retType = find<variable>(*chunk).type;
 	}
 
 	// if not first time, make sure the types are the same.
@@ -293,7 +255,8 @@ void inlineFunc(std::vector<std::string>::iterator &chunk, variable &v) {
 int numArgsGiven(std::vector<std::string>::iterator chunk) {
 	int arg = 1, inlines = 0;
 
-	chunk++; // get past ( to allow inlines to be properly captured
+	// get past ( to allow inlines to be properly captured
+	chunk++; 
 	do {	
 		if (*(chunk) == "," && inlines == 0)
 			arg++;

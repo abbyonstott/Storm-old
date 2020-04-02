@@ -1,2 +1,5 @@
 x = "Hello, World";
+assert(x, "Hello, World", true);
+
 y = x;
+assert(x, y, true);

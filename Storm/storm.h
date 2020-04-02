@@ -43,6 +43,14 @@ enum class StormType {
 	RESERVE = 0x15
 };
 
+// Arithmetic operation
+enum class MathOper {
+	ADD = 0x1E,
+	SUB = 0x1F,
+	MULT = 0x20,
+	DIV = 0x21	
+};
+
 // Something was referenced that doesn't exist
 struct NameError : public std::exception {
 	const char * what() const throw() {

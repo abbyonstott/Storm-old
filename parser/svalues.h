@@ -23,3 +23,6 @@ void declare(std::vector<std::string>::iterator &chunk, std::string name);
 void addLitToData(std::string literal);
 // Convert std::string to bytecode
 std::vector<uint8_t> addStringToByteCode(std::string lit);
+// evaluate mathematical expressions
+void evalArithmetic(std::vector<std::string>::iterator &chunk, char operation);
+std::vector<uint8_t> getRawValue(std::vector<std::string>::iterator chunk);

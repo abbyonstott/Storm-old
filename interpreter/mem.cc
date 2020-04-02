@@ -58,6 +58,7 @@ void callFunc(std::string::iterator &loc) {
 	runScope(loc);
 
 	loc = locTemp;
+	// function names are notated as {n}
 	while (char(*loc - 0x80) != '}') loc++;
 }
 
@@ -89,8 +90,6 @@ void redefVar(int num, std::vector<uint8_t> data) {
 }
 
 void pushStack(std::string::iterator &loc) {
-	
-	
 	std::string data = "";
 
 	if (char(*(loc + 1) - 0x80) == '\"') { // push string literal

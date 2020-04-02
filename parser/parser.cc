@@ -7,7 +7,10 @@ void function::parse(std::vector<std::string>::iterator &chunk) {
 	std::vector<variable> parentScope = parser.vars;
 
 	for (chunk; chunk != parser.splicedProgram.end(); chunk++) {
-		if (*chunk == "write" || *chunk == "read") {
+		if (*chunk == "write" 
+			|| *chunk == "read" 
+			|| *chunk == "assert") 
+		{
 			StormCall(chunk);
 		}
 		else if (*chunk == "func") {
@@ -37,6 +40,13 @@ void function::parse(std::vector<std::string>::iterator &chunk) {
 			// exit scope
 			parser.text.push_back(0x19); // ret
 			break;
+		}
+		else if (*(chunk + 1) == "+"
+			|| *(chunk + 1) == "-"
+			|| *(chunk + 1) == "*"
+			|| *(chunk + 1) == "/")
+		{
+			evalArithmetic(chunk, (*(chunk + 1))[0]);
 		}
 		else if (*(chunk + 1) == "(") { // run function
 			function *f;

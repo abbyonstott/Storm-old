@@ -1,6 +1,7 @@
 #include "../Storm/storm.h"
 #include "interpreter.h"
 #include "../file/file.h"
+#include "arithmetic.h"
 
 #ifdef _WIN32
 HANDLE hStdout, hStdin;
@@ -21,6 +22,7 @@ void move(std::string::iterator loc) {
 		switch (*loc) {
 			case 0x40: // read
 			case 0x41: // write
+			case 0x42: // assert
 				interpreter.registers[reg] = *loc;
 				loc++;
 				break;
@@ -30,7 +32,8 @@ void move(std::string::iterator loc) {
 				/* 
 				 * only do this when in register, could be a security issue 
 				 * later on if unstripped strings with "[" chars are left in 
-				 * the heap.
+				 * the heap. This will probably be removed entirely due to
+				 * this causing type errors when unmanaged
 				*/
 				if (interpreter.registers[reg][0] == '\"') 
 					stripString(&interpreter.registers[reg]);
@@ -187,6 +190,15 @@ void execute(std::string::iterator loc) {
 			
 			break;
 		}
+		case 0x42: // assert (no win32/posix sections :D)
+		{
+			if (interpreter.registers[3] == "1") // assert(value, value, true);
+				assert(interpreter.registers[1] == interpreter.registers[2]);
+			else
+				assert(interpreter.registers[1] != interpreter.registers[2]);
+
+			break;
+		}
 	}
 }
 
@@ -201,6 +213,13 @@ void runScope(std::string::iterator &startloc) {
 			case 0x0E: // move
 				move(loc);
 				break;
+			
+			case (int)MathOper::ADD:
+			case (int)MathOper::SUB:				
+			case (int)MathOper::MULT:
+			case (int)MathOper::DIV:
+				arithmeticOperation(loc);	
+
 			case 0x1A: // exit
 				interpreter.exit_code = 0;
 				return;
@@ -216,10 +235,10 @@ void runScope(std::string::iterator &startloc) {
 			case 0x1C: // call
 				callFunc(loc);
 				// if exit() was called this value will change
-				if (interpreter.exit_code >= 0) return;
 				break;
 		}
 
+		if (interpreter.exit_code >= 0) return;
 		if (endScope) break;
 	}
 }

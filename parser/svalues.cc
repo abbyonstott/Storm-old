@@ -52,6 +52,96 @@ variable find<variable>(std::string name) {
 	throw NameError();
 }
 
+/*
+ * return the bytecode representation of a given 
+ * value
+*/
+std::vector<uint8_t> getRawValue(std::vector<std::string>::iterator chunk) {
+	std::vector<uint8_t> value;
+
+	if ((*chunk)[0] == '\"')
+		value = addStringToByteCode(*chunk);
+	else if (isInt(*chunk)) {
+		for (char c : *chunk)
+			value.push_back(c - '0');
+	} 
+	else if (*chunk == "true" || *chunk == "false")
+		value.push_back((*chunk == "true"));
+	else {
+		try {
+			value = find<variable>(*chunk).ident;
+		}
+		catch (NameError &n) {
+			std::cerr << n.what() << *chunk << " is not a value\n";
+		}
+	}
+
+	return value;
+}
+
+void evalArithmetic(std::vector<std::string>::iterator &chunk, char operation) {
+	variable v;
+
+	try {
+		v = find<variable>(*chunk);	
+	}
+	catch (NameError &n) {
+		std::cerr << n.what() << *chunk << " is not a recognized variable\n";
+		exit(1);
+	}
+
+	// get past operator
+	chunk += 2;
+	if (chunk->size() != 1) {
+		/*
+		 * User used an operator as an assignment operator that should
+		 * be an arithmetic operator
+		 * e.g. + instead of +=
+		*/
+		std::cerr << "Error: no operator '" << operation << " in current context.\n";
+		exit(1);
+	}
+	std::vector<uint8_t> right;
+
+	switch ((*chunk)[0]) {
+		case '+':
+			if (operation != '+') {
+				std::cerr << "Error: " << *chunk << operation << " is not a valid operator";
+				exit(0);
+			}
+
+			parser.text.push_back(0x1E);
+			right.push_back(1);
+			break;
+		case '-':
+			if (operation != '-') {
+				std::cerr << "Error: " << *chunk << operation << " is not a valid operator";
+				exit(0);
+			}
+			
+			parser.text.push_back(0x1F); // sub
+			right.push_back(1);
+			break;
+		case '=': // += -= etc
+			if (operation == '+')
+				parser.text.push_back(0x1E);
+			else if (operation == '-')
+				parser.text.push_back(0x1F);
+			else if (operation == '*')
+				parser.text.push_back(0x20);
+			else // operation == '/' 
+				parser.text.push_back(0x21);
+
+			chunk++;
+			right = getRawValue(chunk);
+			break;
+	}
+
+	parser.text.insert(parser.text.end(), v.ident.begin(),  v.ident.end());
+	parser.text.insert(parser.text.end(), right.begin(),  right.end());
+	chunk++;
+}
+
 void addLitToData(std::string literal) {
 	std::vector<uint8_t> strByteCode = addStringToByteCode(literal);
 	
@@ -64,6 +154,12 @@ void addLitToData(std::string literal) {
 void declare(std::vector<std::string>::iterator &chunk, std::string name) {
 	variable v(name);
 
+	/*
+	 * If a variable's name is blank, it means that 
+	 * it is a temporary variable (typically used for
+	 * function arguments) and is not stored properly 
+	 * in memory.
+	*/
 	if (name != "")
 		chunk += 2;
 
@@ -81,6 +177,14 @@ void declare(std::vector<std::string>::iterator &chunk, std::string name) {
 		// push_back value of int
 		for (char c : *chunk)
 			parser.data.push_back(c - '0');
+	}
+	else if ((*chunk) == "true" || *(chunk) == "false") {
+		v.type = StormType::BOOL;
+		parser.data.push_back(0x1B);
+
+		parser.data.push_back(
+			(*chunk == "true") ? 1 : 0
+		); // bool values are stored as integers
 	}
 	else if (*(chunk+1) == "(") { // function
 		// assigned later

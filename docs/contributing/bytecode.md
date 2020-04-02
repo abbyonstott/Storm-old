@@ -26,13 +26,19 @@ exit     | `0x1A`
 bool     | `0x1B`
 call     | `0x1C`
 void     | `0x1D`
+add      | `0x1E`
+sub      | `0x1F`
+mult     | `0x20`
+div      | `0x21`
 
 **Between `0x40` and `0x7E` are call numbers**
+These are not all syscalls, they are functions
 
 Call    |  value
 --------|-----------
 read    | `0x40`
 write   | `0x41`
+assert  | `0x42`
 
 **Between `0x7F` and `0xFF` is ASCII**
 

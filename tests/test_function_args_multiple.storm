@@ -1,5 +1,6 @@
 func one(x) {
 	x = 2;
+	assert(x, 2, true);
 }
 
 func two(x) {
