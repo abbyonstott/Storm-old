@@ -18,32 +18,51 @@ int getIntFromLoc(std::string::iterator &loc) {
 		value += *(loc++);
 	}
 
-	for (int digit = value.size() - 1; digit >= 0; digit++)
-		val += (value[digit] - '0') * pow(10, digit);
+	for (int digit = value.size() - 1; digit >= 0; digit--)
+		val += value[digit] * pow(10, digit);
 
 	return val;
+}
+
+/*
+ * Convert an integer to a bytecode string
+*/
+std::vector<uint8_t> getIntBytecode(int val) {
+	std::vector<uint8_t> buf;
+	std::string StringVersion = std::to_string(val);
+
+	for (char c : StringVersion)
+		buf.push_back(c - '0');
+	
+	return buf;
 }
 
 void arithmeticOperation(std::string::iterator &loc) {
 	MathOper operation = (MathOper)*loc;
 	loc++;
-	int source;
+	bool reg = false;
+	int var_num, reg_num;
+	int destination, source;
 
 	// add to variable
-	if (char(*(loc) - 0x80) == '[')
-		source = std::stoi(getVal(loc));
-	else { // to register
-		int reg = *loc - 0x0F;
+	if (char(*(loc) - 0x80) == '[') {
+		std::string::iterator getLoc_Location = loc;
+		var_num = getLoc(getLoc_Location, ']');
 
-		source = std::stoi(interpreter.registers[reg]);
+		destination = std::stoi(getVal(loc));
+	}
+	else { // to register
+		reg = true;
+		reg_num = *loc - 0x0F;
+
+		destination = std::stoi(interpreter.registers[reg_num]);
 	}
 
 	loc++;
 	if (char(*(loc) - 0x80) == '[')
 		source = std::stoi(getVal(loc));
-	else if (*(loc) <= 9) {
-		
-	}
+	else if (*(loc) <= 9)
+		source = getIntFromLoc(loc);
 	else { // unlikely
 		int reg = *loc - 0x0f;
 
@@ -52,12 +71,21 @@ void arithmeticOperation(std::string::iterator &loc) {
 
 	switch (operation) {
 		case MathOper::ADD:
+			destination += source;
 			break;
 		case MathOper::SUB:
+			destination += source;
 			break;
 		case MathOper::DIV:
+			destination /= source;
 			break;
 		case MathOper::MULT:
+			destination *= source;
 			break;
 	}
+
+	if (reg)
+		interpreter.registers[reg_num] = std::to_string(destination);
+	else
+		redefVar(var_num, getIntBytecode(destination));
 }

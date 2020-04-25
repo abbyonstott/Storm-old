@@ -37,7 +37,7 @@ void move(std::string::iterator loc) {
 				*/
 				if (interpreter.registers[reg][0] == '\"') 
 					stripString(&interpreter.registers[reg]);
-				
+
 				break;
 		}
 	}

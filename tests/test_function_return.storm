@@ -3,7 +3,7 @@ func retString() {
 }
 
 x = retString();
-assert(x, "hello\n", true);
+assert(x, "hello\n", true); 
 
 func retVal(value) {
 	value = 3;

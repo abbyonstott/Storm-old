@@ -5,7 +5,6 @@ func args(x) {
 
 args("value");
 
-
 func multiargs(x,y,z) {
 	a = x;
 	b = y;

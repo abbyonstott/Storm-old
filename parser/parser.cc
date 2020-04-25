@@ -21,7 +21,38 @@ void function::parse(std::vector<std::string>::iterator &chunk) {
 			create_func(chunk,  &parser.functions.back());
 		}
 		else if ((chunk != parser.splicedProgram.end()) && (*(chunk + 1) == "=")) {
-			declare(chunk, *chunk);
+			try {
+				variable v = find<variable>(*chunk);
+
+				if (*(chunk + 1) == "(") {
+					// inline function
+					variable v;
+					inlineFunc(chunk, v);
+					chunk++;
+				
+					parser.text.push_back(0x18); // pop
+					// the identifier of the argument
+					for (uint8_t byte : v.ident)
+						parser.text.push_back(byte);
+				}
+				else { // non function assignment
+					parser.text.push_back(0x0E);
+					
+					for (uint8_t byte : v.ident)
+						parser.text.push_back(byte);
+
+					chunk+=2;
+
+					std::vector<uint8_t> rawVal = getRawValue(chunk);
+
+					parser.text.insert(parser.text.end(), rawVal.begin(), rawVal.end());
+				}
+				chunk++;
+			}
+			catch (NameError &n) {
+				declare(chunk, *chunk);
+			}
+			
 		}
 		else if (*chunk == "return") {
 

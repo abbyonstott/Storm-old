@@ -9,7 +9,16 @@ int getLoc(std::string::iterator &loc, char endtoken) {
 
 	while (char(*loc - 0x80) != endtoken) {
 		// get integer representation of digit in char
-		num_list.push_back((int)(char(*loc - 0x80) - '0'));
+		char c = char(*loc - 0x80);
+		int n;
+
+		if (c >= '0' && c <= '9')
+			n = c - '0';
+		else if (c >= 'A' && c <= 'F') // hex
+			n = c - 'A' + 10;
+		
+		num_list.push_back(n);
+	
 		loc++;
 	}
 
