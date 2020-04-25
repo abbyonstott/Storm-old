@@ -26,3 +26,4 @@ std::vector<uint8_t> addStringToByteCode(std::string lit);
 // evaluate mathematical expressions
 void evalArithmetic(std::vector<std::string>::iterator &chunk, char operation);
 std::vector<uint8_t> getRawValue(std::vector<std::string>::iterator chunk);
+bool isInlineExpression(std::vector<std::string>::iterator chunk);

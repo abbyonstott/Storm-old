@@ -31,6 +31,16 @@ variable::variable(std::string _name) {
 	TotalNumber++;
 }
 
+// determine if chunk is an inline expression
+bool isInlineExpression(std::vector<std::string>::iterator chunk) {
+	chunk++;
+	return (*chunk == "+"
+		|| *chunk == "-"
+		|| *chunk == "*"
+		|| *chunk == "**"
+		|| *chunk == "/");
+}
+
 // Convert std::string to bytecode
 std::vector<uint8_t> addStringToByteCode(std::string lit) {
 	std::vector<uint8_t> bytecode;
@@ -200,6 +210,26 @@ void declare(std::vector<std::string>::iterator &chunk, std::string name) {
 		while (*chunk != ";") chunk++;
 		
 		return;
+	}
+	else if (isInlineExpression(chunk)) {
+		// x = right + left or similar expressions
+		std::vector<uint8_t> left = getRawValue(chunk), right;
+		std::string op = *(++chunk);
+		right = getRawValue(++chunk);
+
+		v.type = StormType::INTEGER;
+		parser.data.push_back(0x14); // type int
+		parser.vars.push_back(v);
+
+		// assign first value first and then perform the operation
+		parser.data.insert(parser.data.end(), left.begin(), left.end());
+		if (op == "+") parser.text.push_back((int)MathOper::ADD);
+		else if (op == "-") parser.text.push_back((int)MathOper::SUB);
+		else if (op == "*") parser.text.push_back((int)MathOper::MULT);
+		else if (op == "/") parser.text.push_back((int)(MathOper::DIV));
+		
+		parser.text.insert(parser.text.end(), v.ident.begin(), v.ident.end());
+		parser.text.insert(parser.text.end(), right.begin(), right.end());
 	}
 	else {
 		// search for already defined variable

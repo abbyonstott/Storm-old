@@ -52,10 +52,18 @@ void lexer(std::string contents) {
 				splicedProgram.resize(splicedProgram.size() + 1);
 		}
 		else if (*lttr == '\\') {
-			// SPecial characters
+			// Special characters
 			if (inQuotes)
 				splicedProgram.back() += parseSpecial(lttr);
 			lttr++;
+		}
+		else if ((*lttr == '=' || *lttr == '*')
+	 		&& *lttr == *(lttr + 1) && !inQuotes)
+		{
+			// == or **
+			splicedProgram.push_back(std::string(1, *(lttr++)));
+			splicedProgram.back() += *(lttr);
+			splicedProgram.resize(splicedProgram.size() + 1);
 		}
 		else if (*lttr == ',' 
 			|| *lttr == '{' 

@@ -15,7 +15,7 @@ void function::parse(std::vector<std::string>::iterator &chunk) {
 		}
 		else if (*chunk == "func") {
 			chunk++; // skip from "func" keyword to name
-	
+
 			parser.functions.push_back(function(*chunk));
 
 			create_func(chunk,  &parser.functions.back());
@@ -34,6 +34,25 @@ void function::parse(std::vector<std::string>::iterator &chunk) {
 					// the identifier of the argument
 					for (uint8_t byte : v.ident)
 						parser.text.push_back(byte);
+				}
+				else if (isInlineExpression(chunk + 2)) {
+					// An inline expression i.e. y = x * 3
+					chunk += 2;
+					std::vector<uint8_t> left = getRawValue(chunk), right;
+					std::string op = *(++chunk);
+					right = getRawValue(++chunk);
+
+					parser.text.push_back(0x0E);
+					parser.text.insert(parser.text.end(), v.ident.begin(), v.ident.end());
+					parser.text.insert(parser.text.end(), left.begin(), left.end());
+
+					if (op == "+") parser.text.push_back((int)MathOper::ADD);
+					else if (op == "-") parser.text.push_back((int)MathOper::SUB);
+					else if (op == "*") parser.text.push_back((int)MathOper::MULT);
+					else if (op == "/") parser.text.push_back((int)(MathOper::DIV));
+					
+					parser.text.insert(parser.text.end(), v.ident.begin(), v.ident.end());
+					parser.text.insert(parser.text.end(), right.begin(), right.end());
 				}
 				else { // non function assignment
 					parser.text.push_back(0x0E);
