@@ -1,3 +1,7 @@
 x = "Hello, World!";
 y = 3;
 z = 4;
+
+assert(x, "Hello, World!", true);
+assert(y, 3, true);
+assert(z, 4, true);

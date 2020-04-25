@@ -46,23 +46,41 @@ void lexer(std::string contents) {
 			splicedProgram.back() += *lttr;
 		}
 		else if (*lttr == ' ') {
-			if (inQuotes == true)
+			if (inQuotes)
 				splicedProgram.back() += *lttr;
 			else if (splicedProgram.back() == "func" || splicedProgram.back() == "return")
 				splicedProgram.resize(splicedProgram.size() + 1);
 		}
 		else if (*lttr == '\\') {
-			// SPecial characters
-			if (inQuotes == true)
+			// Special characters
+			if (inQuotes)
 				splicedProgram.back() += parseSpecial(lttr);
 			lttr++;
 		}
-		else if (*lttr == ',' || *lttr == '{' || *lttr == '}' || *lttr == '(' || *lttr == ')' || *lttr == '=') {
+		else if ((*lttr == '=' || *lttr == '*')
+	 		&& *lttr == *(lttr + 1) && !inQuotes)
+		{
+			// == or **
+			splicedProgram.push_back(std::string(1, *(lttr++)));
+			splicedProgram.back() += *(lttr);
+			splicedProgram.resize(splicedProgram.size() + 1);
+		}
+		else if (*lttr == ',' 
+			|| *lttr == '{' 
+			|| *lttr == '}' 
+			|| *lttr == '(' 
+			|| *lttr == ')' 
+			|| *lttr == '='
+			|| *lttr == '+'
+			|| *lttr == '-'
+			|| *lttr == '*'
+			|| (*lttr == '/' && *(lttr + 1) != '/')) 
+		{
 			// these are operators and symbols that need their own location in splicedProgram
-			if (inQuotes != true && splicedProgram.back() != "")
+			if (!inQuotes && splicedProgram.back() != "")
 				splicedProgram.resize(splicedProgram.size() + 1);
 			splicedProgram.back() += *lttr;
-			if (inQuotes != true && *(lttr + 1) != ')' && *(lttr) != ')')
+			if (!inQuotes && *(lttr + 1) != ')' && *(lttr) != ')')
 				splicedProgram.resize(splicedProgram.size() + 1);
 		}
 		else if (*lttr == '/' && *(lttr + 1) == '/') {

@@ -9,7 +9,16 @@ int getLoc(std::string::iterator &loc, char endtoken) {
 
 	while (char(*loc - 0x80) != endtoken) {
 		// get integer representation of digit in char
-		num_list.push_back((int)(char(*loc - 0x80) - '0'));
+		char c = char(*loc - 0x80);
+		int n;
+
+		if (c >= '0' && c <= '9')
+			n = c - '0';
+		else if (c >= 'A' && c <= 'F') // hex
+			n = c - 'A' + 10;
+		
+		num_list.push_back(n);
+	
 		loc++;
 	}
 
@@ -58,6 +67,7 @@ void callFunc(std::string::iterator &loc) {
 	runScope(loc);
 
 	loc = locTemp;
+	// function names are notated as {n}
 	while (char(*loc - 0x80) != '}') loc++;
 }
 
@@ -89,8 +99,6 @@ void redefVar(int num, std::vector<uint8_t> data) {
 }
 
 void pushStack(std::string::iterator &loc) {
-	
-	
 	std::string data = "";
 
 	if (char(*(loc + 1) - 0x80) == '\"') { // push string literal

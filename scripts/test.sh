@@ -10,11 +10,7 @@ elif [ "$(objdump --syms storm | grep debug)" = "" ]; then
 	exit 1
 fi
 
-if [ ! -e ../tests/compiled ]; then
-	mkdir ../tests/compiled
-else
-	rm -r ../tests/compiled/*
-fi
+[ ! -e ../tests/compiled ] && mkdir ../tests/compiled || rm -r ../tests/compiled/*
 
 total=0
 compiled=0

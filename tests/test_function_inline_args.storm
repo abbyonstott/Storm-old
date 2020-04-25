@@ -9,9 +9,12 @@ func inlineArg(x) {
 func inlineNum() {
 	return 3;
 }
-// nesting
-inlineArg(inlineArg(inlineNum()));
 
-// number
-inlineArg(inlineNum());
+n = inlineArg(inlineArg(inlineNum()));
+assert(n, 3, true);
+
+n2 = inlineArg(inlineNum());
+assert(n2, 3, true);
+
 x = inlineArg(inlineStr());
+assert(x, "Value", true);

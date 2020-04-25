@@ -29,8 +29,13 @@ instruct = {
 	0x1B : "bool",
 	0x1C : "call",
 	0x1D : "void",
+	0x1E : "add",
+	0x1F : "sub",
+	0x20 : "mult",
+	0x21 : "div",
 	0x40 : "read\n",
-	0x41 : "write\n"
+	0x41 : "write\n",
+	0x42 : "assert\n"
 }
 
 class Type(Enum):

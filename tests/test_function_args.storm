@@ -1,14 +1,17 @@
 func args(x) {
 	y = x;
+	assert(y, x, true);
 }
 
 args("value");
-
 
 func multiargs(x,y,z) {
 	a = x;
 	b = y;
 	c = z;
+	assert(a, x, true);
+	assert(b, y, true);
+	assert(c, z, true);
 }
 
 multiargs(1, 2, 3);

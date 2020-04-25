@@ -7,18 +7,71 @@ void function::parse(std::vector<std::string>::iterator &chunk) {
 	std::vector<variable> parentScope = parser.vars;
 
 	for (chunk; chunk != parser.splicedProgram.end(); chunk++) {
-		if (*chunk == "write" || *chunk == "read") {
+		if (*chunk == "write" 
+			|| *chunk == "read" 
+			|| *chunk == "assert") 
+		{
 			StormCall(chunk);
 		}
 		else if (*chunk == "func") {
 			chunk++; // skip from "func" keyword to name
-	
+
 			parser.functions.push_back(function(*chunk));
 
 			create_func(chunk,  &parser.functions.back());
 		}
 		else if ((chunk != parser.splicedProgram.end()) && (*(chunk + 1) == "=")) {
-			declare(chunk, *chunk);
+			try {
+				variable v = find<variable>(*chunk);
+
+				if (*(chunk + 1) == "(") {
+					// inline function
+					variable v;
+					inlineFunc(chunk, v);
+					chunk++;
+				
+					parser.text.push_back(0x18); // pop
+					// the identifier of the argument
+					for (uint8_t byte : v.ident)
+						parser.text.push_back(byte);
+				}
+				else if (isInlineExpression(chunk + 2)) {
+					// An inline expression i.e. y = x * 3
+					chunk += 2;
+					std::vector<uint8_t> left = getRawValue(chunk), right;
+					std::string op = *(++chunk);
+					right = getRawValue(++chunk);
+
+					parser.text.push_back(0x0E);
+					parser.text.insert(parser.text.end(), v.ident.begin(), v.ident.end());
+					parser.text.insert(parser.text.end(), left.begin(), left.end());
+
+					if (op == "+") parser.text.push_back((int)MathOper::ADD);
+					else if (op == "-") parser.text.push_back((int)MathOper::SUB);
+					else if (op == "*") parser.text.push_back((int)MathOper::MULT);
+					else if (op == "/") parser.text.push_back((int)(MathOper::DIV));
+					
+					parser.text.insert(parser.text.end(), v.ident.begin(), v.ident.end());
+					parser.text.insert(parser.text.end(), right.begin(), right.end());
+				}
+				else { // non function assignment
+					parser.text.push_back(0x0E);
+					
+					for (uint8_t byte : v.ident)
+						parser.text.push_back(byte);
+
+					chunk+=2;
+
+					std::vector<uint8_t> rawVal = getRawValue(chunk);
+
+					parser.text.insert(parser.text.end(), rawVal.begin(), rawVal.end());
+				}
+				chunk++;
+			}
+			catch (NameError &n) {
+				declare(chunk, *chunk);
+			}
+			
 		}
 		else if (*chunk == "return") {
 
@@ -37,6 +90,13 @@ void function::parse(std::vector<std::string>::iterator &chunk) {
 			// exit scope
 			parser.text.push_back(0x19); // ret
 			break;
+		}
+		else if (*(chunk + 1) == "+"
+			|| *(chunk + 1) == "-"
+			|| *(chunk + 1) == "*"
+			|| *(chunk + 1) == "/")
+		{
+			evalArithmetic(chunk, (*(chunk + 1))[0]);
 		}
 		else if (*(chunk + 1) == "(") { // run function
 			function *f;

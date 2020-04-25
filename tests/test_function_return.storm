@@ -3,6 +3,7 @@ func retString() {
 }
 
 x = retString();
+assert(x, "hello\n", true); 
 
 func retVal(value) {
 	value = 3;
@@ -10,9 +11,11 @@ func retVal(value) {
 }
 
 b = retVal(2);
+assert(b, 3, true);
 
 func retNum() {
 	return 3;
 }
 
 n = retNum();
+assert(n, 3, true);

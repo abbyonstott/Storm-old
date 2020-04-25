@@ -27,6 +27,9 @@
     <ClCompile Include="..\..\interpreter\interpreter.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\interpreter\arithmetic.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Storm\storm.h">
@@ -36,6 +39,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\interpreter\interpreter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\interpreter\arithmetic.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

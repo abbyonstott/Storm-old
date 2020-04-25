@@ -4,8 +4,14 @@
 StormVMCall determineCall(std::string kw) {
 	if (kw == "read")
 		return STORM_READ;
-	else
+	else if (kw == "write")
 		return STORM_WRITE;
+	else if (kw == "assert")
+		return STORM_ASSERT;
+	
+	std::cerr << "Fatal error: expected system call, got " << kw << " instead\n";
+	std::cerr << "If this is a developer, make sure you added your call to storm_calls.h\n";
+	exit(1);
 }
 
 void addCallArgsToData(StormVMCall call, std::vector<std::string>::iterator &chunk) {
@@ -28,7 +34,11 @@ void addCallArgsToData(StormVMCall call, std::vector<std::string>::iterator &chu
 		variable arg;
 	
 		// If literal add it to data as a var and then add to varIdent
-		if ((*chunk)[0] == '"' || isInt(*chunk)) {
+		if ((*chunk)[0] == '"' 
+			|| isInt(*chunk)
+			|| *chunk == "true"
+			|| *chunk == "false")
+		{
 			declare(chunk, "");
 			arg = parser.vars.back();
 		}
@@ -55,8 +65,8 @@ void addCallArgsToData(StormVMCall call, std::vector<std::string>::iterator &chu
 			}
 		}
 
-		// throw incorrect type error if not reserved (as to preserve arguments in function declarations)
-		if (arg.type != call.typesWanted[i] && arg.type != StormType::RESERVE && arg.type != StormType::SVOID) {
+		// throw incorrect type error if not reserved (as to preserve arguments in function whose arg types are the same)
+		if (arg.type != call.typesWanted[i] && !(arg.type != StormType::SVOID || arg.type != StormType::RESERVE)) {
 			std::cerr << "Error: " << call.name << " expects " << (int)call.typesWanted[i] << " for argument " << i+1 << ". Got " << (int)arg.type << " instead.\n";
 			exit(EXIT_FAILURE);
 		}
