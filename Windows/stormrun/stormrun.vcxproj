@@ -28,7 +28,7 @@
     <ClCompile Include="..\..\file\read.cc" />
     <ClCompile Include="..\..\interpreter\interpreter.cc" />
     <ClCompile Include="..\..\interpreter\mem.cc" />
-    <ClCompile Include="..\..\interpreter\arithmetic.cc"
+    <ClCompile Include="..\..\interpreter\arithmetic.cc" />
     <ClCompile Include="..\..\Storm\util.cc" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
