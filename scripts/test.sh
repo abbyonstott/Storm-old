@@ -5,7 +5,8 @@ cd ../build
 if [ ! -e storm ]; then
 	echo Storm must be built > /dev/stderr
 	exit 1
-elif [ "$(objdump --syms storm | grep debug)" = "" ]; then
+# check for letter d surrounded by space in syms table for debugging syms
+elif [ "$(objdump --syms storm | grep '.\sd.\s')" = "" ]; then
 	echo $0: Please compile with debug > /dev/stderr
 	exit 1
 fi
