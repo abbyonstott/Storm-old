@@ -12,8 +12,8 @@ esac],
 
 AM_CONDITIONAL(DEBUG, test x"$debug" = x"true")
 
-dnl force c++17
-CXXFLAGS=" -std=c++17"
+dnl force c++20
+CXXFLAGS=" -std=c++20"
 
 AC_PROG_CXX
 AC_CONFIG_FILES([Makefile])
